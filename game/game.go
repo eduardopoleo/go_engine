@@ -20,7 +20,7 @@ func NewGame(name string, width int32, height int32) Game {
 }
 
 func (game *Game) Input() {
-	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+	for event := game.Renderer.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch e := event.(type) {
 		case *sdl.QuitEvent:
 			println("Quit")
@@ -28,6 +28,7 @@ func (game *Game) Input() {
 		case *sdl.KeyboardEvent:
 			if e.Keysym.Sym == sdl.K_ESCAPE {
 				game.Running = false
+				game.Renderer.Destroy()
 			}
 		}
 	}

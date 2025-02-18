@@ -13,6 +13,10 @@ type Renderer struct {
 }
 
 func NewRenderer(name string, width int32, height int32) Renderer {
+	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
+		panic(err)
+	}
+
 	window, err := sdl.CreateWindow(name, sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, width, height, sdl.WINDOW_SHOWN)
 	if err != nil {
 		log.Fatal(err)
@@ -23,6 +27,16 @@ func NewRenderer(name string, width int32, height int32) Renderer {
 	}
 
 	return Renderer{SDLRenderer: renderer, SDLWindow: window}
+}
+
+func (renderer *Renderer) Destroy() {
+	renderer.SDLWindow.Destroy()
+	renderer.SDLRenderer.Destroy()
+	sdl.Quit()
+}
+
+func (renderer *Renderer) PollEvent() sdl.Event {
+	return sdl.PollEvent()
 }
 
 func (renderer *Renderer) ClearScreen() {
