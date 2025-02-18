@@ -2,7 +2,6 @@ package main
 
 import (
 	"engine/game"
-	"log"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -15,24 +14,24 @@ func main() {
 
 	defer sdl.Quit()
 
-	window, err := sdl.CreateWindow("Test RenderGeometryRaw", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 800, 600, sdl.WINDOW_SHOWN)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer window.Destroy()
+	// window, err := sdl.CreateWindow("Test RenderGeometryRaw", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 800, 600, sdl.WINDOW_SHOWN)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer window.Destroy()
 
-	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_SOFTWARE)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer renderer.Destroy()
+	// renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_SOFTWARE)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer renderer.Destroy()
 
-	game := game.Game{Running: true}
+	game := game.NewGame("Awesome new game", 600, 800)
 
 	for game.Running {
 		game.Input()
 		game.Update()
-		game.Draw(renderer)
+		game.Draw()
 
 		sdl.Delay(16)
 	}
