@@ -35,8 +35,48 @@ func (renderer *Renderer) Destroy() {
 	sdl.Quit()
 }
 
-func (renderer *Renderer) PollEvent() sdl.Event {
-	return sdl.PollEvent()
+const (
+	QUIT     string = "QUIT"
+	KEYBOARD        = "KEYBOARD"
+)
+
+const (
+	ESCAPE string = "ESCAPE"
+)
+
+type Event struct {
+	Type          string
+	OriginalEvent sdl.Event
+}
+
+func (renderer *Renderer) PollEvent() *Event {
+	sdlEvent := sdl.PollEvent()
+
+	// You can return nil if the function returns pointer
+	if sdlEvent == nil {
+		return nil
+	}
+
+	event := &Event{OriginalEvent: sdlEvent}
+
+	switch sdlEvent.(type) {
+	case *sdl.QuitEvent:
+		event.Type = QUIT
+	case *sdl.KeyboardEvent:
+		event.Type = KEYBOARD
+	}
+
+	return event
+}
+
+func (event *Event) Key() string {
+	if keyEvent, ok := event.OriginalEvent.(*sdl.KeyboardEvent); ok {
+		switch keyEvent.Keysym.Sym {
+		case sdl.K_ESCAPE:
+			return ESCAPE
+		}
+	}
+	return ""
 }
 
 func (renderer *Renderer) ClearScreen() {
@@ -51,6 +91,8 @@ func (renderer *Renderer) Render() {
 func (renderer *Renderer) DrawCircle(x int32, y int32, radius int32, color uint32) {
 	gfx.FilledCircleColor(renderer.SDLRenderer, x, y, radius, fromHex(color))
 }
+
+// Private
 
 func fromHex(hexColor uint32) sdl.Color {
 	return sdl.Color{
