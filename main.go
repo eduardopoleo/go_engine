@@ -1,44 +1,32 @@
 package main
 
 import (
+	"engine/game"
+
+	"github.com/veandco/go-sdl2/gfx"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 func main() {
+
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
 	}
 	defer sdl.Quit()
 
-	window, err := sdl.CreateWindow("test", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 800, 600, sdl.WINDOW_SHOWN)
-	if err != nil {
-		panic(err)
+	window, renderer, error := sdl.CreateWindowAndRenderer(800, 600, sdl.WINDOW_BORDERLESS)
+
+	if error != nil {
+		panic("oh no!")
 	}
-	defer window.Destroy()
 
-	surface, err := window.GetSurface()
-	if err != nil {
-		panic(err)
+	if window == nil {
+		panic("ho no, no window")
 	}
-	surface.FillRect(nil, 0)
 
-	rect := sdl.Rect{0, 0, 200, 200}
-	colour := sdl.Color{R: 255, G: 0, B: 255, A: 255} // purple
-	pixel := sdl.MapRGBA(surface.Format, colour.R, colour.G, colour.B, colour.A)
-	surface.FillRect(&rect, pixel)
-	window.UpdateSurface()
+	color := sdl.Color{R: 255, G: 255, B: 255, A: 255}
+	gfx.LineColor(renderer, 300, 300, 500, 500, color)
 
-	running := true
-	for running {
-		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch event.(type) {
-			case *sdl.QuitEvent: // NOTE: Please use `*sdl.QuitEvent` for `v0.4.x` (current version).
-				println("Quit")
-				running = false
-				break
-			}
-		}
-
-		sdl.Delay(33)
-	}
+	game := game.Game{Running: true}
+	game.Input()
 }
