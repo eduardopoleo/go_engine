@@ -2,31 +2,38 @@ package main
 
 import (
 	"engine/game"
+	"log"
 
-	"github.com/veandco/go-sdl2/gfx"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 func main() {
-
+	// Find a better place to put this behind!
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
 	}
+
 	defer sdl.Quit()
 
-	window, renderer, error := sdl.CreateWindowAndRenderer(800, 600, sdl.WINDOW_BORDERLESS)
-
-	if error != nil {
-		panic("oh no!")
+	window, err := sdl.CreateWindow("Test RenderGeometryRaw", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, 800, 600, sdl.WINDOW_SHOWN)
+	if err != nil {
+		log.Fatal(err)
 	}
+	defer window.Destroy()
 
-	if window == nil {
-		panic("ho no, no window")
+	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_SOFTWARE)
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	color := sdl.Color{R: 255, G: 255, B: 255, A: 255}
-	gfx.LineColor(renderer, 300, 300, 500, 500, color)
+	defer renderer.Destroy()
 
 	game := game.Game{Running: true}
-	game.Input()
+
+	for game.Running {
+		game.Input()
+		game.Update()
+		game.Draw(renderer)
+
+		sdl.Delay(16)
+	}
 }
