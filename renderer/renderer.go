@@ -35,15 +35,21 @@ func (renderer *Renderer) Destroy() {
 	sdl.Quit()
 }
 
+// Events type
 const (
 	QUIT     string = "QUIT"
-	KEYBOARD        = "KEYBOARD"
+	KEYBOARD string = "KEYBOARD"
+	KEYDOWN  string = "KEYDOWN"
+	KEYUP    string = "KEYUP"
 )
 
+// Keys
 const (
-	ESCAPE  string = "ESCAPE"
-	KEYDOWN        = "KEYDOWN"
-	KEYUP          = "KEYUP"
+	ESCAPE      string = "ESCAPE"
+	LEFT_ARROW  string = "LEFT_ARROW"
+	RIGHT_ARROW string = "RIGHT_ARROW"
+	UP_ARROW    string = "UP_ARROW"
+	DOWN_ARROW  string = "DOWN_ARROW"
 )
 
 type Event struct {
