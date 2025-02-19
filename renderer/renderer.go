@@ -82,6 +82,14 @@ func (event *Event) Key() string {
 		switch keyEvent.Keysym.Sym {
 		case sdl.K_ESCAPE:
 			return ESCAPE
+		case sdl.K_LEFT:
+			return LEFT_ARROW
+		case sdl.K_RIGHT:
+			return RIGHT_ARROW
+		case sdl.K_UP:
+			return UP_ARROW
+		case sdl.K_DOWN:
+			return DOWN_ARROW
 		}
 	}
 	return ""

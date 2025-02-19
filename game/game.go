@@ -49,9 +49,9 @@ func (game *Game) Input() {
 			} else if event.Key() == renderer.RIGHT_ARROW {
 				game.PushForce.X = float32(50 * constants.PIXEL_PER_METER)
 			} else if event.Key() == renderer.UP_ARROW {
-				game.PushForce.Y = float32(50 * constants.PIXEL_PER_METER)
-			} else if event.Key() == renderer.DOWN_ARROW {
 				game.PushForce.Y = float32(-50 * constants.PIXEL_PER_METER)
+			} else if event.Key() == renderer.DOWN_ARROW {
+				game.PushForce.Y = float32(50 * constants.PIXEL_PER_METER)
 			}
 		}
 	}
@@ -70,14 +70,15 @@ func (game *Game) Update() {
 
 	particle := &game.Particles[0]
 
-	particle.SumForces.Add(game.PushForce)
+	particle.SumForces = particle.SumForces.Add(game.PushForce)
+
 	/*
 		Effectively we want the DT to always be 16 miliseconds per frame.
 		The delay above will ensure this is the case when the rendering is too fast
 		IF the rendering is too slow we still want to have a constant update per frame
 		so we force the dt to be 16 miliseconds per frame (~ FPS 60)
 	*/
-	particle.Integrate(float32(constants.MILLISECONDS_PER_FRAME / 100))
+	particle.Integrate((float32(constants.MILLISECONDS_PER_FRAME) / 1000))
 }
 
 func (game *Game) Draw() {
@@ -85,7 +86,6 @@ func (game *Game) Draw() {
 
 	particle := &game.Particles[0]
 	particle.Render(&game.Renderer)
-
 	game.Renderer.Render()
 	sdl.Delay(16)
 }
