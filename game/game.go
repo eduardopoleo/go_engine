@@ -9,9 +9,10 @@ import (
 )
 
 type Game struct {
-	Running  bool
-	Renderer renderer.Renderer
-	Balls    [3]entities.Ball
+	Running   bool
+	Renderer  renderer.Renderer
+	Balls     [3]entities.Ball
+	PushForce physics.Vec2
 }
 
 func NewGame(name string, width int32, height int32) Game {
@@ -24,6 +25,7 @@ func NewGame(name string, width int32, height int32) Game {
 		Color:    0xFFFFFFFF,
 	}
 	game.Balls[0] = ball
+	game.PushForce = physics.Vec2{X: 0, Y: 0}
 	return game
 }
 
@@ -33,7 +35,8 @@ func (game *Game) Input() {
 		case renderer.QUIT:
 			println("Quit")
 			game.Running = false
-		case renderer.KEYBOARD:
+			game.Renderer.Destroy()
+		case renderer.KEYDOWN:
 			if event.Key() == renderer.ESCAPE {
 				game.Running = false
 				game.Renderer.Destroy()

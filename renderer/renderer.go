@@ -41,7 +41,9 @@ const (
 )
 
 const (
-	ESCAPE string = "ESCAPE"
+	ESCAPE  string = "ESCAPE"
+	KEYDOWN        = "KEYDOWN"
+	KEYUP          = "KEYUP"
 )
 
 type Event struct {
@@ -51,21 +53,21 @@ type Event struct {
 
 func (renderer *Renderer) PollEvent() *Event {
 	sdlEvent := sdl.PollEvent()
-
-	// You can return nil if the function returns pointer
 	if sdlEvent == nil {
-		return nil
+		return nil // <- Prevent infinite loop when no more events
 	}
 
-	event := &Event{OriginalEvent: sdlEvent}
+	event := &Event{OriginalEvent: sdlEvent} // Use pointer directly
 
-	switch sdlEvent.(type) {
-	case *sdl.QuitEvent:
+	if _, ok := sdlEvent.(*sdl.QuitEvent); ok {
 		event.Type = QUIT
-	case *sdl.KeyboardEvent:
-		event.Type = KEYBOARD
+	} else if keyEvent, ok := sdlEvent.(*sdl.KeyboardEvent); ok {
+		if keyEvent.Type == sdl.KEYDOWN {
+			event.Type = KEYDOWN
+		} else if keyEvent.Type == sdl.KEYUP {
+			event.Type = KEYUP
+		}
 	}
-
 	return event
 }
 
