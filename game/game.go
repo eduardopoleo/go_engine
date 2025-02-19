@@ -1,6 +1,8 @@
 package game
 
 import (
+	"engine/entities"
+	"engine/physics"
 	"engine/renderer"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -9,13 +11,19 @@ import (
 type Game struct {
 	Running  bool
 	Renderer renderer.Renderer
+	Balls    [3]entities.Ball
 }
 
 func NewGame(name string, width int32, height int32) Game {
 	game := Game{Running: true}
 	renderer := renderer.NewRenderer(name, width, height)
 	game.Renderer = renderer
-
+	ball := entities.Ball{
+		Position: physics.Vec2{X: 50, Y: 50},
+		Radius:   5,
+		Color:    0xFFFFFFFF,
+	}
+	game.Balls[0] = ball
 	return game
 }
 
@@ -35,12 +43,19 @@ func (game *Game) Input() {
 }
 
 func (game *Game) Update() {
-	// Todo in here
+	ball := &game.Balls[0]
+	increase := physics.Vec2{X: 5, Y: 5}
+
+	ball.Position.Add(increase)
+	// fmt.Printf("ball position X: %d, Y: %d\n", ball.Position.X, ball.Position.Y)
 }
 
 func (game *Game) Draw() {
 	game.Renderer.ClearScreen()
-	game.Renderer.DrawCircle(300, 300, 100, 0xFFFFFFFF)
+
+	ball := &game.Balls[0]
+	ball.Render(&game.Renderer)
+
 	game.Renderer.Render()
-	sdl.Delay(33)
+	sdl.Delay(16)
 }
