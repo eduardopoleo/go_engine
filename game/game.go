@@ -53,7 +53,18 @@ func (game *Game) Input() {
 			} else if event.Key() == renderer.DOWN_ARROW {
 				game.PushForce.Y = float32(50 * constants.PIXEL_PER_METER)
 			}
+		case renderer.KEYUP:
+			if event.Key() == renderer.LEFT_ARROW {
+				game.PushForce.X = 0
+			} else if event.Key() == renderer.RIGHT_ARROW {
+				game.PushForce.X = 0
+			} else if event.Key() == renderer.UP_ARROW {
+				game.PushForce.Y = 0
+			} else if event.Key() == renderer.DOWN_ARROW {
+				game.PushForce.Y = 0
+			}
 		}
+
 	}
 }
 
