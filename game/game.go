@@ -28,7 +28,7 @@ func NewGame(name string, width int32, height int32) Game {
 		Mass:     2.0,
 	}
 	game.Particles[0] = particle
-	game.PushForce = physics.Vec2{X: 0, Y: 0}
+	game.PushForce = physics.Vec2{}
 	game.TimeToPreviousFrame = sdl.GetTicks64()
 	return game
 }
