@@ -12,7 +12,7 @@ import (
 type Game struct {
 	Running             bool
 	Renderer            renderer.Renderer
-	Particles           [3]entities.Particle
+	Particles           [1]entities.Particle
 	PushForce           physics.Vec2
 	TimeToPreviousFrame uint64
 }
@@ -79,17 +79,16 @@ func (game *Game) Update() {
 	}
 	game.TimeToPreviousFrame = sdl.GetTicks64()
 
-	particle := &game.Particles[0]
+	for i := range game.Particles {
+		particle := &game.Particles[i] // Get a reference to the particle
 
-	particle.SumForces = particle.SumForces.Add(game.PushForce)
+		gravity := physics.NewGravityForce(particle.Mass)
+		particle.SumForces = particle.SumForces.Add(gravity)
+		particle.SumForces = particle.SumForces.Add(game.PushForce)
 
-	/*
-		Effectively we want the DT to always be 16 miliseconds per frame.
-		The delay above will ensure this is the case when the rendering is too fast
-		IF the rendering is too slow we still want to have a constant update per frame
-		so we force the dt to be 16 miliseconds per frame (~ FPS 60)
-	*/
-	particle.Integrate((float32(constants.MILLISECONDS_PER_FRAME) / 1000))
+		particle.Integrate((float32(constants.MILLISECONDS_PER_FRAME) / 1000))
+	}
+
 }
 
 func (game *Game) Draw() {

@@ -29,20 +29,33 @@ func (particle *Particle) Integrate(dt float32) {
 		return
 	}
 	/*
-		F = M * A
 		Forces are applied on every frame.
 		Consequently, the acceleration is set anew on every frame
+		F = M * A or A = F / M
 	*/
 	particle.Acceleration = particle.SumForces.Multiply(1.0 / particle.Mass)
-	// V = A * dt
 
 	/*
 		The velocity and position stay the same and are only affected when there are forces
 		acting on the particle
+		V = A * dt
 	*/
 	particle.Velocity = particle.Velocity.Add(particle.Acceleration.Multiply(dt))
+
 	// P = V * dt
 	particle.Position = particle.Position.Add(particle.Velocity.Multiply(dt))
-	// Clear the sum of forces so that the next
+
+	// resets the forces for the next cycle
+
 	particle.SumForces = physics.Vec2{X: 0, Y: 0}
 }
+
+/*
+	pressing an arrow key enacts force
+	force turns into acceleration
+	which turns into velocity
+
+	releasing the key releases the force
+	then the acceleration is zero
+	the velocity right now stays the same cuz I do not have friction yet
+*/
