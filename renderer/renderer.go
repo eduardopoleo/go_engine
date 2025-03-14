@@ -17,7 +17,13 @@ func NewRenderer(name string, width int32, height int32) Renderer {
 		panic(err)
 	}
 
-	window, err := sdl.CreateWindow(name, sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, width, height, sdl.WINDOW_SHOWN)
+	window, err := sdl.CreateWindow(name,
+		sdl.WINDOWPOS_UNDEFINED,
+		sdl.WINDOWPOS_UNDEFINED,
+		width, height,
+		sdl.WINDOW_SHOWN,
+	)
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -106,6 +112,12 @@ func (renderer *Renderer) Render() {
 
 func (renderer *Renderer) DrawCircle(x int32, y int32, radius int32, color uint32) {
 	gfx.FilledCircleColor(renderer.SDLRenderer, x, y, radius, fromHex(color))
+}
+
+func (renderer *Renderer) GetWindowSize() (float32, float32) {
+	width, height := renderer.SDLWindow.GetSize()
+
+	return float32(width), float32(height)
 }
 
 // Private

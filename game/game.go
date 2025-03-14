@@ -79,6 +79,8 @@ func (game *Game) Update() {
 	}
 	game.TimeToPreviousFrame = sdl.GetTicks64()
 
+	windowWidth, windowHeight := game.Renderer.GetWindowSize()
+
 	for i := range game.Particles {
 		particle := &game.Particles[i] // Get a reference to the particle
 
@@ -87,6 +89,24 @@ func (game *Game) Update() {
 		particle.SumForces = particle.SumForces.Add(game.PushForce)
 
 		particle.Integrate((float32(constants.MILLISECONDS_PER_FRAME) / 1000))
+
+		/*
+			Inelastic collision can be simplified with a change in velocity does not need
+			to be force based
+		*/
+		if (particle.Position.X - float32(particle.Radius)) <= 0 {
+			particle.Velocity.X = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.X
+			particle.Position.X = float32(particle.Radius)
+		} else if (particle.Position.X + float32(particle.Radius)) >= windowWidth {
+			particle.Velocity.X = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.X
+			particle.Position.X = windowWidth - float32(particle.Radius)
+		} else if (particle.Position.Y - float32(particle.Radius)) <= 0 {
+			particle.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.Y
+			particle.Position.Y = float32(particle.Radius)
+		} else if (particle.Position.Y + float32(particle.Radius)) >= windowHeight {
+			particle.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.Y
+			particle.Position.Y = windowHeight - float32(particle.Radius)
+		}
 	}
 
 }
