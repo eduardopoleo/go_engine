@@ -5,6 +5,7 @@ import (
 	"engine/entities"
 	"engine/physics"
 	"engine/renderer"
+	"engine/vector"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -13,9 +14,9 @@ type Game struct {
 	Running             bool
 	Renderer            renderer.Renderer
 	Particles           []entities.Particle
-	SpringBase          entities.Particle
+	SpringAnchor        entities.Particle
 	SpringParticle      entities.Particle
-	PushForce           physics.Vec2
+	PushForce           vector.Vec2
 	TimeToPreviousFrame uint64
 }
 
@@ -23,7 +24,7 @@ func NewGame(name string, width int32, height int32) Game {
 	game := Game{Running: true}
 	renderer := renderer.NewRenderer(name, width, height)
 	game.Renderer = renderer
-	game.PushForce = physics.Vec2{}
+	game.PushForce = vector.Vec2{}
 	game.TimeToPreviousFrame = sdl.GetTicks64()
 	game.setupSpring(width)
 
@@ -64,7 +65,7 @@ func (game *Game) Input() {
 			if event.Key() == renderer.BUTTON_LEFT {
 				mouseX, mouseY := game.Renderer.GetMouseCoordinates()
 				particle := entities.Particle{
-					Position: physics.Vec2{X: mouseX, Y: mouseY},
+					Position: vector.Vec2{X: mouseX, Y: mouseY},
 					Radius:   5,
 					Color:    0xFFFFFFFF,
 					Mass:     2.0,
@@ -93,7 +94,10 @@ func (game *Game) Update() {
 		particle := &game.Particles[i] // Get a reference to the particle
 		applyPhysics(particle, game, windowWidth, windowHeight)
 	}
-	applyPhysics(&game.SpringParticle, game, windowWidth, windowHeight)
+	springParticle := &game.SpringParticle
+	springForce := physics.NewSpringForce(springParticle, &game.SpringAnchor)
+	springParticle.SumForces = springParticle.SumForces.Add(springForce)
+	applyPhysics(springParticle, game, windowWidth, windowHeight)
 }
 
 func (game *Game) Draw() {
@@ -104,10 +108,10 @@ func (game *Game) Draw() {
 		particle.Render(&game.Renderer)
 	}
 
-	game.SpringBase.Render(&game.Renderer)
+	game.SpringAnchor.Render(&game.Renderer)
 	game.SpringParticle.Render(&game.Renderer)
 	game.Renderer.DrawLine(
-		game.SpringBase.Position,
+		game.SpringAnchor.Position,
 		game.SpringParticle.Position,
 		renderer.WHITE,
 	)
@@ -117,15 +121,15 @@ func (game *Game) Draw() {
 // private
 
 func (game *Game) setupSpring(windowWidth int32) {
-	game.SpringBase = entities.Particle{
-		Position: physics.Vec2{X: float32(windowWidth) / 2, Y: 0},
+	game.SpringAnchor = entities.Particle{
+		Position: vector.Vec2{X: float32(windowWidth) / 2, Y: 0},
 		Radius:   5,
 		Color:    renderer.WHITE,
 		Mass:     2.0,
 	}
 
 	game.SpringParticle = entities.Particle{
-		Position: physics.Vec2{X: float32(windowWidth) / 2, Y: 60},
+		Position: vector.Vec2{X: float32(windowWidth) / 2, Y: 60},
 		Radius:   5,
 		Color:    renderer.WHITE,
 		Mass:     2.0,
@@ -134,8 +138,8 @@ func (game *Game) setupSpring(windowWidth int32) {
 }
 
 func applyPhysics(particle *entities.Particle, game *Game, windowWidth float32, windowHeight float32) {
-	gravity := physics.NewGravityForce(particle.Mass)
-	particle.SumForces = particle.SumForces.Add(gravity)
+	weight := physics.NewWeightForce(particle.Mass)
+	particle.SumForces = particle.SumForces.Add(weight)
 	particle.SumForces = particle.SumForces.Add(game.PushForce)
 
 	particle.Integrate((float32(constants.MILLISECONDS_PER_FRAME) / 1000))
@@ -157,4 +161,9 @@ func applyPhysics(particle *entities.Particle, game *Game, windowWidth float32, 
 		particle.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.Y
 		particle.Position.Y = windowHeight - float32(particle.Radius)
 	}
+}
+
+// F = -kx
+func applySpringForce(particle *entities.Particle) {
+
 }

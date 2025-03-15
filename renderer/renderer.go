@@ -1,7 +1,7 @@
 package renderer
 
 import (
-	"engine/physics"
+	"engine/vector"
 	"log"
 
 	"github.com/veandco/go-sdl2/gfx"
@@ -134,7 +134,7 @@ func (renderer *Renderer) DrawCircle(x int32, y int32, radius int32, color uint3
 	gfx.FilledCircleColor(renderer.SDLRenderer, x, y, radius, fromHex(color))
 }
 
-func (renderer *Renderer) DrawLine(point1 physics.Vec2, point2 physics.Vec2, color uint32) {
+func (renderer *Renderer) DrawLine(point1 vector.Vec2, point2 vector.Vec2, color uint32) {
 	gfx.LineColor(
 		renderer.SDLRenderer,
 		int32(point1.X),

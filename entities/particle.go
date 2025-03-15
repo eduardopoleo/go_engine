@@ -1,18 +1,18 @@
 package entities
 
 import (
-	"engine/physics"
 	"engine/renderer"
+	"engine/vector"
 )
 
 type Particle struct {
 	Mass         float32
 	Radius       int32
 	Color        uint32
-	Position     physics.Vec2
-	Velocity     physics.Vec2
-	Acceleration physics.Vec2
-	SumForces    physics.Vec2
+	Position     vector.Vec2
+	Velocity     vector.Vec2
+	Acceleration vector.Vec2
+	SumForces    vector.Vec2
 }
 
 func (particle *Particle) Render(renderer *renderer.Renderer) {
@@ -47,7 +47,7 @@ func (particle *Particle) Integrate(dt float32) {
 
 	// resets the forces for the next cycle
 
-	particle.SumForces = physics.Vec2{X: 0, Y: 0}
+	particle.SumForces = vector.Vec2{X: 0, Y: 0}
 }
 
 /*
