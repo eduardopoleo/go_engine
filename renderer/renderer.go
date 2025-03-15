@@ -43,10 +43,11 @@ func (renderer *Renderer) Destroy() {
 
 // Events type
 const (
-	QUIT     string = "QUIT"
-	KEYBOARD string = "KEYBOARD"
-	KEYDOWN  string = "KEYDOWN"
-	KEYUP    string = "KEYUP"
+	QUIT           string = "QUIT"
+	KEYBOARD       string = "KEYBOARD"
+	KEYDOWN        string = "KEYDOWN"
+	KEYUP          string = "KEYUP"
+	MOUSE_UP_EVENT string = "MOUSE_UP_EVENT"
 )
 
 // Keys
@@ -56,6 +57,7 @@ const (
 	RIGHT_ARROW string = "RIGHT_ARROW"
 	UP_ARROW    string = "UP_ARROW"
 	DOWN_ARROW  string = "DOWN_ARROW"
+	BUTTON_LEFT string = "BUTTON_LEFT"
 )
 
 type Event struct {
@@ -79,6 +81,10 @@ func (renderer *Renderer) PollEvent() *Event {
 		} else if keyEvent.Type == sdl.KEYUP {
 			event.Type = KEYUP
 		}
+	} else if mouseEvent, ok := sdlEvent.(*sdl.MouseButtonEvent); ok {
+		if mouseEvent.Type == sdl.MOUSEBUTTONUP {
+			event.Type = MOUSE_UP_EVENT
+		}
 	}
 	return event
 }
@@ -96,6 +102,13 @@ func (event *Event) Key() string {
 			return UP_ARROW
 		case sdl.K_DOWN:
 			return DOWN_ARROW
+		case sdl.BUTTON_LEFT:
+			return BUTTON_LEFT
+		}
+	} else if mouseEvent, ok := event.OriginalEvent.(*sdl.MouseButtonEvent); ok {
+		switch mouseEvent.Button {
+		case sdl.BUTTON_LEFT:
+			return BUTTON_LEFT
 		}
 	}
 	return ""
@@ -118,6 +131,12 @@ func (renderer *Renderer) GetWindowSize() (float32, float32) {
 	width, height := renderer.SDLWindow.GetSize()
 
 	return float32(width), float32(height)
+}
+
+func (renderer *Renderer) GetMouseCoordinates() (float32, float32) {
+	mouseX, mouseY, _ := sdl.GetMouseState()
+
+	return float32(mouseX), float32(mouseY)
 }
 
 // Private

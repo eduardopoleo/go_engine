@@ -5,6 +5,7 @@ import (
 	"engine/entities"
 	"engine/physics"
 	"engine/renderer"
+	"fmt"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -12,7 +13,7 @@ import (
 type Game struct {
 	Running             bool
 	Renderer            renderer.Renderer
-	Particles           [1]entities.Particle
+	Particles           []entities.Particle
 	PushForce           physics.Vec2
 	TimeToPreviousFrame uint64
 }
@@ -21,13 +22,6 @@ func NewGame(name string, width int32, height int32) Game {
 	game := Game{Running: true}
 	renderer := renderer.NewRenderer(name, width, height)
 	game.Renderer = renderer
-	particle := entities.Particle{
-		Position: physics.Vec2{X: 50, Y: 50},
-		Radius:   5,
-		Color:    0xFFFFFFFF,
-		Mass:     2.0,
-	}
-	game.Particles[0] = particle
 	game.PushForce = physics.Vec2{}
 	game.TimeToPreviousFrame = sdl.GetTicks64()
 	return game
@@ -62,6 +56,18 @@ func (game *Game) Input() {
 				game.PushForce.Y = 0
 			} else if event.Key() == renderer.DOWN_ARROW {
 				game.PushForce.Y = 0
+			}
+		case renderer.MOUSE_UP_EVENT:
+			if event.Key() == renderer.BUTTON_LEFT {
+				fmt.Printf("Got here no?")
+				mouseX, mouseY := game.Renderer.GetMouseCoordinates()
+				particle := entities.Particle{
+					Position: physics.Vec2{X: mouseX, Y: mouseY},
+					Radius:   5,
+					Color:    0xFFFFFFFF,
+					Mass:     2.0,
+				}
+				game.Particles = append(game.Particles, particle)
 			}
 		}
 
@@ -114,8 +120,11 @@ func (game *Game) Update() {
 func (game *Game) Draw() {
 	game.Renderer.ClearScreen()
 
-	particle := &game.Particles[0]
-	particle.Render(&game.Renderer)
+	for i := range game.Particles {
+		particle := &game.Particles[i]
+		particle.Render(&game.Renderer)
+	}
+
 	game.Renderer.Render()
 	sdl.Delay(16)
 }
