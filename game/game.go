@@ -5,7 +5,6 @@ import (
 	"engine/entities"
 	"engine/physics"
 	"engine/renderer"
-	"fmt"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -59,7 +58,6 @@ func (game *Game) Input() {
 			}
 		case renderer.MOUSE_UP_EVENT:
 			if event.Key() == renderer.BUTTON_LEFT {
-				fmt.Printf("Got here no?")
 				mouseX, mouseY := game.Renderer.GetMouseCoordinates()
 				particle := entities.Particle{
 					Position: physics.Vec2{X: mouseX, Y: mouseY},
@@ -126,5 +124,4 @@ func (game *Game) Draw() {
 	}
 
 	game.Renderer.Render()
-	sdl.Delay(16)
 }
