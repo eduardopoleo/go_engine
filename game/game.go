@@ -13,6 +13,8 @@ type Game struct {
 	Running             bool
 	Renderer            renderer.Renderer
 	Particles           []entities.Particle
+	SpringBase          entities.Particle
+	SpringParticle      entities.Particle
 	PushForce           physics.Vec2
 	TimeToPreviousFrame uint64
 }
@@ -23,6 +25,8 @@ func NewGame(name string, width int32, height int32) Game {
 	game.Renderer = renderer
 	game.PushForce = physics.Vec2{}
 	game.TimeToPreviousFrame = sdl.GetTicks64()
+	game.setupSpring(width)
+
 	return game
 }
 
@@ -87,32 +91,9 @@ func (game *Game) Update() {
 
 	for i := range game.Particles {
 		particle := &game.Particles[i] // Get a reference to the particle
-
-		gravity := physics.NewGravityForce(particle.Mass)
-		particle.SumForces = particle.SumForces.Add(gravity)
-		particle.SumForces = particle.SumForces.Add(game.PushForce)
-
-		particle.Integrate((float32(constants.MILLISECONDS_PER_FRAME) / 1000))
-
-		/*
-			Inelastic collision can be simplified with a change in velocity does not need
-			to be force based
-		*/
-		if (particle.Position.X - float32(particle.Radius)) <= 0 {
-			particle.Velocity.X = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.X
-			particle.Position.X = float32(particle.Radius)
-		} else if (particle.Position.X + float32(particle.Radius)) >= windowWidth {
-			particle.Velocity.X = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.X
-			particle.Position.X = windowWidth - float32(particle.Radius)
-		} else if (particle.Position.Y - float32(particle.Radius)) <= 0 {
-			particle.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.Y
-			particle.Position.Y = float32(particle.Radius)
-		} else if (particle.Position.Y + float32(particle.Radius)) >= windowHeight {
-			particle.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.Y
-			particle.Position.Y = windowHeight - float32(particle.Radius)
-		}
+		applyPhysics(particle, game, windowWidth, windowHeight)
 	}
-
+	applyPhysics(&game.SpringParticle, game, windowWidth, windowHeight)
 }
 
 func (game *Game) Draw() {
@@ -123,5 +104,57 @@ func (game *Game) Draw() {
 		particle.Render(&game.Renderer)
 	}
 
+	game.SpringBase.Render(&game.Renderer)
+	game.SpringParticle.Render(&game.Renderer)
+	game.Renderer.DrawLine(
+		game.SpringBase.Position,
+		game.SpringParticle.Position,
+		renderer.WHITE,
+	)
 	game.Renderer.Render()
+}
+
+// private
+
+func (game *Game) setupSpring(windowWidth int32) {
+	game.SpringBase = entities.Particle{
+		Position: physics.Vec2{X: float32(windowWidth) / 2, Y: 0},
+		Radius:   5,
+		Color:    renderer.WHITE,
+		Mass:     2.0,
+	}
+
+	game.SpringParticle = entities.Particle{
+		Position: physics.Vec2{X: float32(windowWidth) / 2, Y: 60},
+		Radius:   5,
+		Color:    renderer.WHITE,
+		Mass:     2.0,
+	}
+
+}
+
+func applyPhysics(particle *entities.Particle, game *Game, windowWidth float32, windowHeight float32) {
+	gravity := physics.NewGravityForce(particle.Mass)
+	particle.SumForces = particle.SumForces.Add(gravity)
+	particle.SumForces = particle.SumForces.Add(game.PushForce)
+
+	particle.Integrate((float32(constants.MILLISECONDS_PER_FRAME) / 1000))
+
+	/*
+		Inelastic collision can be simplified with a change in velocity does not need
+		to be force based
+	*/
+	if (particle.Position.X - float32(particle.Radius)) <= 0 {
+		particle.Velocity.X = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.X
+		particle.Position.X = float32(particle.Radius)
+	} else if (particle.Position.X + float32(particle.Radius)) >= windowWidth {
+		particle.Velocity.X = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.X
+		particle.Position.X = windowWidth - float32(particle.Radius)
+	} else if (particle.Position.Y - float32(particle.Radius)) <= 0 {
+		particle.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.Y
+		particle.Position.Y = float32(particle.Radius)
+	} else if (particle.Position.Y + float32(particle.Radius)) >= windowHeight {
+		particle.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.Y
+		particle.Position.Y = windowHeight - float32(particle.Radius)
+	}
 }

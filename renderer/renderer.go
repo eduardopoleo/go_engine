@@ -1,6 +1,7 @@
 package renderer
 
 import (
+	"engine/physics"
 	"log"
 
 	"github.com/veandco/go-sdl2/gfx"
@@ -40,6 +41,12 @@ func (renderer *Renderer) Destroy() {
 	renderer.SDLRenderer.Destroy()
 	sdl.Quit()
 }
+
+// Colors
+
+const (
+	WHITE uint32 = 0xFFFFFFFF
+)
 
 // Events type
 const (
@@ -125,6 +132,17 @@ func (renderer *Renderer) Render() {
 
 func (renderer *Renderer) DrawCircle(x int32, y int32, radius int32, color uint32) {
 	gfx.FilledCircleColor(renderer.SDLRenderer, x, y, radius, fromHex(color))
+}
+
+func (renderer *Renderer) DrawLine(point1 physics.Vec2, point2 physics.Vec2, color uint32) {
+	gfx.LineColor(
+		renderer.SDLRenderer,
+		int32(point1.X),
+		int32(point1.Y),
+		int32(point2.X),
+		int32(point2.Y),
+		fromHex(color),
+	)
 }
 
 func (renderer *Renderer) GetWindowSize() (float32, float32) {
