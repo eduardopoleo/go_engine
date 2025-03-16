@@ -6,7 +6,7 @@ import (
 )
 
 type Particle struct {
-	Mass         float32
+	Mass         float64
 	Radius       int32
 	Color        uint32
 	Position     vector.Vec2
@@ -24,28 +24,20 @@ func (particle *Particle) Render(renderer *renderer.Renderer) {
 	)
 }
 
-func (particle *Particle) Integrate(dt float32) {
+func (particle *Particle) Integrate(dt float64) {
 	if particle.Mass == 0 {
 		return
 	}
-	/*
-		Forces are applied on every frame.
-		Consequently, the acceleration is set anew on every frame
-		F = M * A or A = F / M
-	*/
+
 	particle.Acceleration = particle.SumForces.Multiply(1.0 / particle.Mass)
 
-	/*
-		The velocity and position stay the same and are only affected when there are forces
-		acting on the particle
-		V = A * dt
-	*/
+	// Update velocity first (semi-implicit Euler)
+	dampingFactor := 0.99
 	particle.Velocity = particle.Velocity.Add(particle.Acceleration.Multiply(dt))
+	particle.Velocity = particle.Velocity.Multiply(dampingFactor)
 
-	// P = V * dt
+	// Then update position
 	particle.Position = particle.Position.Add(particle.Velocity.Multiply(dt))
-
-	// resets the forces for the next cycle
 
 	particle.SumForces = vector.Vec2{X: 0, Y: 0}
 }

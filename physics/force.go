@@ -6,7 +6,7 @@ import (
 	"engine/vector"
 )
 
-func NewWeightForce(mass float32) vector.Vec2 {
+func NewWeightForce(mass float64) vector.Vec2 {
 	return vector.Vec2{X: 0, Y: mass * constants.GRAVITY}
 }
 

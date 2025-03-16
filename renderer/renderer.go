@@ -145,16 +145,16 @@ func (renderer *Renderer) DrawLine(point1 vector.Vec2, point2 vector.Vec2, color
 	)
 }
 
-func (renderer *Renderer) GetWindowSize() (float32, float32) {
+func (renderer *Renderer) GetWindowSize() (float64, float64) {
 	width, height := renderer.SDLWindow.GetSize()
 
-	return float32(width), float32(height)
+	return float64(width), float64(height)
 }
 
-func (renderer *Renderer) GetMouseCoordinates() (float32, float32) {
+func (renderer *Renderer) GetMouseCoordinates() (float64, float64) {
 	mouseX, mouseY, _ := sdl.GetMouseState()
 
-	return float32(mouseX), float32(mouseY)
+	return float64(mouseX), float64(mouseY)
 }
 
 // Private
