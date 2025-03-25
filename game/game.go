@@ -13,9 +13,9 @@ import (
 type Game struct {
 	Running             bool
 	Renderer            renderer.Renderer
-	Particles           []entities.Particle
-	SpringAnchor        entities.Particle
-	SpringParticles     []entities.Particle
+	Bodies              []entities.Body
+	SpringAnchor        entities.Body
+	SpringBodies        []entities.Body
 	PushForce           vector.Vec2
 	TimeToPreviousFrame uint64
 }
@@ -64,13 +64,13 @@ func (game *Game) Input() {
 		case renderer.MOUSE_UP_EVENT:
 			if event.Key() == renderer.BUTTON_LEFT {
 				mouseX, mouseY := game.Renderer.GetMouseCoordinates()
-				particle := entities.Particle{
+				body := entities.Body{
 					Position: vector.Vec2{X: mouseX, Y: mouseY},
 					Radius:   5,
 					Color:    0xFFFFFFFF,
 					Mass:     2.0,
 				}
-				game.Particles = append(game.Particles, particle)
+				game.Bodies = append(game.Bodies, body)
 			}
 		}
 
@@ -99,49 +99,49 @@ func (game *Game) Update() {
 
 	windowWidth, windowHeight := game.Renderer.GetWindowSize()
 
-	// Update other particles
-	for i := range game.Particles {
-		particle := &game.Particles[i]
-		weight := physics.NewWeightForce(particle.Mass)
-		particle.SumForces = particle.SumForces.Add(weight)
-		particle.SumForces = particle.SumForces.Add(game.PushForce)
+	// Update other bodies
+	for i := range game.Bodies {
+		body := &game.Bodies[i]
+		weight := physics.NewWeightForce(body.Mass)
+		body.SumForces = body.SumForces.Add(weight)
+		body.SumForces = body.SumForces.Add(game.PushForce)
 	}
 
-	for i := 0; i < len(game.SpringParticles); i++ {
-		particle := &game.SpringParticles[i]
-		weight := physics.NewWeightForce(particle.Mass)
-		particle.SumForces = particle.SumForces.Add(weight)
-		particle.SumForces = particle.SumForces.Add(game.PushForce)
+	for i := 0; i < len(game.SpringBodies); i++ {
+		body := &game.SpringBodies[i]
+		weight := physics.NewWeightForce(body.Mass)
+		body.SumForces = body.SumForces.Add(weight)
+		body.SumForces = body.SumForces.Add(game.PushForce)
 	}
 
-	if len(game.SpringParticles) > 0 {
-		springForce := physics.NewSpringForce(&game.SpringParticles[0], &game.SpringAnchor)
-		game.SpringParticles[0].SumForces = game.SpringParticles[0].SumForces.Add(springForce)
+	if len(game.SpringBodies) > 0 {
+		springForce := physics.NewSpringForce(&game.SpringBodies[0], &game.SpringAnchor)
+		game.SpringBodies[0].SumForces = game.SpringBodies[0].SumForces.Add(springForce)
 	}
 
-	// Apply spring forces between particles
-	for i := 1; i < len(game.SpringParticles); i++ {
-		previousParticle := &game.SpringParticles[i-1]
-		currentParticle := &game.SpringParticles[i]
+	// Apply spring forces between bodies
+	for i := 1; i < len(game.SpringBodies); i++ {
+		previousBody := &game.SpringBodies[i-1]
+		currentBody := &game.SpringBodies[i]
 
-		springForce := physics.NewSpringForce(currentParticle, previousParticle)
-		currentParticle.SumForces = currentParticle.SumForces.Add(springForce)
-		previousParticle.SumForces = previousParticle.SumForces.Add(springForce.Multiply(-1))
+		springForce := physics.NewSpringForce(currentBody, previousBody)
+		currentBody.SumForces = currentBody.SumForces.Add(springForce)
+		previousBody.SumForces = previousBody.SumForces.Add(springForce.Multiply(-1))
 	}
 
-	// Integrate last all particles not in between
+	// Integrate last all bodies not in between
 	// use float64
 	// use damping factor to increase stability
-	for i := range game.Particles {
-		particle := &game.Particles[i]
-		particle.Integrate(deltaTime)
-		bounce(particle, game, windowWidth, windowHeight, deltaTime)
+	for i := range game.Bodies {
+		body := &game.Bodies[i]
+		body.Integrate(deltaTime)
+		bounce(body, game, windowWidth, windowHeight, deltaTime)
 	}
 
-	for i := 0; i < len(game.SpringParticles); i++ {
-		particle := &game.SpringParticles[i]
-		particle.Integrate(deltaTime)
-		bounce(particle, game, windowWidth, windowHeight, deltaTime)
+	for i := 0; i < len(game.SpringBodies); i++ {
+		body := &game.SpringBodies[i]
+		body.Integrate(deltaTime)
+		bounce(body, game, windowWidth, windowHeight, deltaTime)
 	}
 
 }
@@ -149,24 +149,24 @@ func (game *Game) Update() {
 func (game *Game) Draw() {
 	game.Renderer.ClearScreen()
 
-	for i := range game.Particles {
-		particle := &game.Particles[i]
-		particle.Render(&game.Renderer)
+	for i := range game.Bodies {
+		body := &game.Bodies[i]
+		body.Render(&game.Renderer)
 	}
 
-	for i := range game.SpringParticles {
-		particle := &game.SpringParticles[i]
+	for i := range game.SpringBodies {
+		body := &game.SpringBodies[i]
 
-		particle.Render(&game.Renderer)
-		var anchor entities.Particle
+		body.Render(&game.Renderer)
+		var anchor entities.Body
 		if i == 0 {
 			anchor = game.SpringAnchor
 		} else {
-			anchor = game.SpringParticles[i-1]
+			anchor = game.SpringBodies[i-1]
 		}
 		game.Renderer.DrawLine(
 			anchor.Position,
-			particle.Position,
+			body.Position,
 			renderer.WHITE,
 		)
 	}
@@ -179,16 +179,16 @@ func (game *Game) Draw() {
 // private
 
 func (game *Game) setupSpring(windowWidth int32) {
-	game.SpringAnchor = entities.Particle{
+	game.SpringAnchor = entities.Body{
 		Position: vector.Vec2{X: float64(windowWidth) / 2, Y: 0},
 		Radius:   5,
 		Color:    renderer.WHITE,
 		Mass:     2.0,
 	}
 
-	var particle entities.Particle
+	var body entities.Body
 	for i := 0; i < int(constants.SPRING_SIZE); i++ {
-		particle = entities.Particle{
+		body = entities.Body{
 			Position: vector.Vec2{
 				X: float64(windowWidth) / 2,
 				Y: game.SpringAnchor.Position.Y + (constants.SPRING_REST_LENGTH * float64(i+1)),
@@ -197,22 +197,22 @@ func (game *Game) setupSpring(windowWidth int32) {
 			Color:  renderer.WHITE,
 			Mass:   2.0,
 		}
-		game.SpringParticles = append(game.SpringParticles, particle)
+		game.SpringBodies = append(game.SpringBodies, body)
 	}
 }
 
-func bounce(particle *entities.Particle, game *Game, windowWidth float64, windowHeight float64, deltaTime float64) {
-	if (particle.Position.X - float64(particle.Radius)) <= 0 {
-		particle.Velocity.X = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.X
-		particle.Position.X = float64(particle.Radius)
-	} else if (particle.Position.X + float64(particle.Radius)) >= windowWidth {
-		particle.Velocity.X = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.X
-		particle.Position.X = windowWidth - float64(particle.Radius)
-	} else if (particle.Position.Y - float64(particle.Radius)) <= 0 {
-		particle.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.Y
-		particle.Position.Y = float64(particle.Radius)
-	} else if (particle.Position.Y + float64(particle.Radius)) >= windowHeight {
-		particle.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * particle.Velocity.Y
-		particle.Position.Y = windowHeight - float64(particle.Radius)
+func bounce(body *entities.Body, game *Game, windowWidth float64, windowHeight float64, deltaTime float64) {
+	if (body.Position.X - float64(body.Radius)) <= 0 {
+		body.Velocity.X = -constants.RESTITUTION_COEFFICIENT * body.Velocity.X
+		body.Position.X = float64(body.Radius)
+	} else if (body.Position.X + float64(body.Radius)) >= windowWidth {
+		body.Velocity.X = -constants.RESTITUTION_COEFFICIENT * body.Velocity.X
+		body.Position.X = windowWidth - float64(body.Radius)
+	} else if (body.Position.Y - float64(body.Radius)) <= 0 {
+		body.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * body.Velocity.Y
+		body.Position.Y = float64(body.Radius)
+	} else if (body.Position.Y + float64(body.Radius)) >= windowHeight {
+		body.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * body.Velocity.Y
+		body.Position.Y = windowHeight - float64(body.Radius)
 	}
 }

@@ -5,7 +5,7 @@ import (
 	"engine/vector"
 )
 
-type Particle struct {
+type Body struct {
 	Mass         float64
 	Radius       int32
 	Color        uint32
@@ -15,31 +15,31 @@ type Particle struct {
 	SumForces    vector.Vec2
 }
 
-func (particle *Particle) Render(renderer *renderer.Renderer) {
+func (body *Body) Render(renderer *renderer.Renderer) {
 	renderer.DrawCircle(
-		int32(particle.Position.X),
-		int32(particle.Position.Y),
-		particle.Radius,
-		particle.Color,
+		int32(body.Position.X),
+		int32(body.Position.Y),
+		body.Radius,
+		body.Color,
 	)
 }
 
-func (particle *Particle) Integrate(dt float64) {
-	if particle.Mass == 0 {
+func (body *Body) Integrate(dt float64) {
+	if body.Mass == 0 {
 		return
 	}
 
-	particle.Acceleration = particle.SumForces.Multiply(1.0 / particle.Mass)
+	body.Acceleration = body.SumForces.Multiply(1.0 / body.Mass)
 
 	// Update velocity first (semi-implicit Euler)
 	dampingFactor := 0.99
-	particle.Velocity = particle.Velocity.Add(particle.Acceleration.Multiply(dt))
-	particle.Velocity = particle.Velocity.Multiply(dampingFactor)
+	body.Velocity = body.Velocity.Add(body.Acceleration.Multiply(dt))
+	body.Velocity = body.Velocity.Multiply(dampingFactor)
 
 	// Then update position
-	particle.Position = particle.Position.Add(particle.Velocity.Multiply(dt))
+	body.Position = body.Position.Add(body.Velocity.Multiply(dt))
 
-	particle.SumForces = vector.Vec2{X: 0, Y: 0}
+	body.SumForces = vector.Vec2{X: 0, Y: 0}
 }
 
 /*
