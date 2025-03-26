@@ -105,28 +105,6 @@ func (game *Game) Update() {
 		body.SumForces = body.SumForces.Add(game.PushForce)
 	}
 
-	for i := 0; i < len(game.SpringBodies); i++ {
-		body := &game.SpringBodies[i]
-		weight := physics.NewWeightForce(body.Mass)
-		body.SumForces = body.SumForces.Add(weight)
-		body.SumForces = body.SumForces.Add(game.PushForce)
-	}
-
-	if len(game.SpringBodies) > 0 {
-		springForce := physics.NewSpringForce(&game.SpringBodies[0], &game.SpringAnchor)
-		game.SpringBodies[0].SumForces = game.SpringBodies[0].SumForces.Add(springForce)
-	}
-
-	// Apply spring forces between bodies
-	for i := 1; i < len(game.SpringBodies); i++ {
-		previousBody := &game.SpringBodies[i-1]
-		currentBody := &game.SpringBodies[i]
-
-		springForce := physics.NewSpringForce(currentBody, previousBody)
-		currentBody.SumForces = currentBody.SumForces.Add(springForce)
-		previousBody.SumForces = previousBody.SumForces.Add(springForce.Multiply(-1))
-	}
-
 	// Integrate last all bodies not in between
 	// use float64
 	// use damping factor to increase stability
@@ -135,13 +113,6 @@ func (game *Game) Update() {
 		body.Integrate(deltaTime)
 		bounce(body, game, windowWidth, windowHeight, deltaTime)
 	}
-
-	for i := 0; i < len(game.SpringBodies); i++ {
-		body := &game.SpringBodies[i]
-		body.Integrate(deltaTime)
-		bounce(body, game, windowWidth, windowHeight, deltaTime)
-	}
-
 }
 
 func (game *Game) Draw() {
@@ -149,7 +120,7 @@ func (game *Game) Draw() {
 
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
-		body.Shape.Draw(body.Position.X, body.Position.Y, &game.Renderer)
+		body.Shape.Draw(body.Position.X, body.Position.Y, body.Rotation, &game.Renderer)
 	}
 
 	game.Renderer.Render()

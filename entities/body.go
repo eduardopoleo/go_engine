@@ -14,6 +14,10 @@ type Body struct {
 	Acceleration vector.Vec2
 	SumForces    vector.Vec2
 	// Angular properties
+	Rotation            float64
+	AngularVelocity     float64
+	AngularAcceleration float64
+	SumTorque           float64
 }
 
 func (body *Body) Integrate(dt float64) {

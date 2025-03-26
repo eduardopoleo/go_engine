@@ -8,7 +8,7 @@ import (
 
 type Shape interface {
 	MomentOfInertia(mass float64) float64
-	Draw(x float64, y float64, renderer *renderer.Renderer)
+	Draw(x float64, y float64, rotation float64, renderer *renderer.Renderer)
 }
 
 type ShapeType int
@@ -41,11 +41,12 @@ func (circle *Circle) MomentOfInertia(mass float64) float64 {
 	return float64(circle.Radius)
 }
 
-func (circle *Circle) Draw(x float64, y float64, renderer *renderer.Renderer) {
+func (circle *Circle) Draw(x float64, y float64, rotation float64, renderer *renderer.Renderer) {
 	renderer.DrawCircle(
 		int32(x),
 		int32(y),
 		circle.Radius,
+		rotation,
 		circle.Color,
 	)
 }

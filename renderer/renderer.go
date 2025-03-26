@@ -3,6 +3,7 @@ package renderer
 import (
 	"engine/vector"
 	"log"
+	"math"
 
 	"github.com/veandco/go-sdl2/gfx"
 	"github.com/veandco/go-sdl2/sdl"
@@ -130,7 +131,19 @@ func (renderer *Renderer) Render() {
 	renderer.SDLRenderer.Present()
 }
 
-func (renderer *Renderer) DrawCircle(x int32, y int32, radius int32, color uint32) {
+func (renderer *Renderer) DrawCircle(x int32, y int32, radius int32, rotation float64, color uint32) {
+	gfx.CircleColor(renderer.SDLRenderer, x, y, radius, fromHex(color))
+	gfx.LineColor(
+		renderer.SDLRenderer,
+		x,
+		y,
+		x+(int32(math.Cos(rotation))*radius),
+		y+(int32(math.Sin(rotation))*radius),
+		fromHex(color),
+	)
+}
+
+func (renderer *Renderer) DrawFilledCircle(x int32, y int32, radius int32, color uint32) {
 	gfx.FilledCircleColor(renderer.SDLRenderer, x, y, radius, fromHex(color))
 }
 
