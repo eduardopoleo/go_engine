@@ -26,7 +26,6 @@ func NewGame(name string, width int32, height int32) Game {
 	game.Renderer = renderer
 	game.PushForce = vector.Vec2{}
 	game.TimeToPreviousFrame = sdl.GetTicks64()
-	game.setupSpring(width)
 
 	return game
 }
@@ -66,10 +65,9 @@ func (game *Game) Input() {
 				mouseX, mouseY := game.Renderer.GetMouseCoordinates()
 				body := entities.Body{
 					Position: vector.Vec2{X: mouseX, Y: mouseY},
-					Radius:   5,
-					Color:    0xFFFFFFFF,
 					Mass:     2.0,
 				}
+				body.Shape = entities.NewCircle(20, renderer.WHITE)
 				game.Bodies = append(game.Bodies, body)
 			}
 		}
@@ -151,68 +149,26 @@ func (game *Game) Draw() {
 
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
-		body.Render(&game.Renderer)
+		body.Shape.Draw(body.Position.X, body.Position.Y, &game.Renderer)
 	}
-
-	for i := range game.SpringBodies {
-		body := &game.SpringBodies[i]
-
-		body.Render(&game.Renderer)
-		var anchor entities.Body
-		if i == 0 {
-			anchor = game.SpringAnchor
-		} else {
-			anchor = game.SpringBodies[i-1]
-		}
-		game.Renderer.DrawLine(
-			anchor.Position,
-			body.Position,
-			renderer.WHITE,
-		)
-	}
-
-	game.SpringAnchor.Render(&game.Renderer)
 
 	game.Renderer.Render()
 }
 
-// private
-
-func (game *Game) setupSpring(windowWidth int32) {
-	game.SpringAnchor = entities.Body{
-		Position: vector.Vec2{X: float64(windowWidth) / 2, Y: 0},
-		Radius:   5,
-		Color:    renderer.WHITE,
-		Mass:     2.0,
-	}
-
-	var body entities.Body
-	for i := 0; i < int(constants.SPRING_SIZE); i++ {
-		body = entities.Body{
-			Position: vector.Vec2{
-				X: float64(windowWidth) / 2,
-				Y: game.SpringAnchor.Position.Y + (constants.SPRING_REST_LENGTH * float64(i+1)),
-			},
-			Radius: 5,
-			Color:  renderer.WHITE,
-			Mass:   2.0,
-		}
-		game.SpringBodies = append(game.SpringBodies, body)
-	}
-}
-
 func bounce(body *entities.Body, game *Game, windowWidth float64, windowHeight float64, deltaTime float64) {
-	if (body.Position.X - float64(body.Radius)) <= 0 {
-		body.Velocity.X = -constants.RESTITUTION_COEFFICIENT * body.Velocity.X
-		body.Position.X = float64(body.Radius)
-	} else if (body.Position.X + float64(body.Radius)) >= windowWidth {
-		body.Velocity.X = -constants.RESTITUTION_COEFFICIENT * body.Velocity.X
-		body.Position.X = windowWidth - float64(body.Radius)
-	} else if (body.Position.Y - float64(body.Radius)) <= 0 {
-		body.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * body.Velocity.Y
-		body.Position.Y = float64(body.Radius)
-	} else if (body.Position.Y + float64(body.Radius)) >= windowHeight {
-		body.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * body.Velocity.Y
-		body.Position.Y = windowHeight - float64(body.Radius)
+	if circle, ok := body.Shape.(*entities.Circle); ok {
+		if (body.Position.X - float64(circle.Radius)) <= 0 {
+			body.Velocity.X = -constants.RESTITUTION_COEFFICIENT * body.Velocity.X
+			body.Position.X = float64(circle.Radius)
+		} else if (body.Position.X + float64(circle.Radius)) >= windowWidth {
+			body.Velocity.X = -constants.RESTITUTION_COEFFICIENT * body.Velocity.X
+			body.Position.X = windowWidth - float64(circle.Radius)
+		} else if (body.Position.Y - float64(circle.Radius)) <= 0 {
+			body.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * body.Velocity.Y
+			body.Position.Y = float64(circle.Radius)
+		} else if (body.Position.Y + float64(circle.Radius)) >= windowHeight {
+			body.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * body.Velocity.Y
+			body.Position.Y = windowHeight - float64(circle.Radius)
+		}
 	}
 }

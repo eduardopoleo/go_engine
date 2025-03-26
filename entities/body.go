@@ -1,27 +1,19 @@
 package entities
 
 import (
-	"engine/renderer"
 	"engine/vector"
 )
 
 type Body struct {
-	Mass         float64
-	Radius       int32
-	Color        uint32
-	Position     vector.Vec2
+	// General fields
+	Mass     float64
+	Position vector.Vec2
+	Shape    Shape
+	// Linear properties
 	Velocity     vector.Vec2
 	Acceleration vector.Vec2
 	SumForces    vector.Vec2
-}
-
-func (body *Body) Render(renderer *renderer.Renderer) {
-	renderer.DrawCircle(
-		int32(body.Position.X),
-		int32(body.Position.Y),
-		body.Radius,
-		body.Color,
-	)
+	// Angular properties
 }
 
 func (body *Body) Integrate(dt float64) {
@@ -41,13 +33,3 @@ func (body *Body) Integrate(dt float64) {
 
 	body.SumForces = vector.Vec2{X: 0, Y: 0}
 }
-
-/*
-	pressing an arrow key enacts force
-	force turns into acceleration
-	which turns into velocity
-
-	releasing the key releases the force
-	then the acceleration is zero
-	the velocity right now stays the same cuz I do not have friction yet
-*/
