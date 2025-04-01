@@ -137,8 +137,8 @@ func (renderer *Renderer) DrawCircle(x int32, y int32, radius int32, rotation fl
 		renderer.SDLRenderer,
 		x,
 		y,
-		x+(int32(math.Cos(rotation))*radius),
-		y+(int32(math.Sin(rotation))*radius),
+		x+int32(math.Cos(rotation)*float64(radius)),
+		y+int32(math.Sin(rotation)*float64(radius)),
 		fromHex(color),
 	)
 }

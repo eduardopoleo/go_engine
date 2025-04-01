@@ -7,7 +7,7 @@ import (
 )
 
 type Shape interface {
-	MomentOfInertia(mass float64) float64
+	MomentOfInertia() float64
 	Draw(x float64, y float64, rotation float64, renderer *renderer.Renderer)
 }
 
@@ -36,9 +36,8 @@ func NewCircle(radius int32, color uint32) *Circle {
 	}
 }
 
-func (circle *Circle) MomentOfInertia(mass float64) float64 {
-	// TODO
-	return float64(circle.Radius)
+func (circle *Circle) MomentOfInertia() float64 {
+	return 0.5 * float64(circle.Radius) * float64(circle.Radius)
 }
 
 func (circle *Circle) Draw(x float64, y float64, rotation float64, renderer *renderer.Renderer) {
@@ -68,7 +67,7 @@ func NewPolygon(color uint32, vertices []vector.Vec2) Polygon {
 	}
 }
 
-func (polygon *Polygon) MomentOfInertia(mass float64) float64 {
+func (polygon *Polygon) MomentOfInertia() float64 {
 	// TODO
 	return math.Pi
 }

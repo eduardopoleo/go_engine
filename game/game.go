@@ -14,8 +14,6 @@ type Game struct {
 	Running             bool
 	Renderer            renderer.Renderer
 	Bodies              []entities.Body
-	SpringAnchor        entities.Body
-	SpringBodies        []entities.Body
 	PushForce           vector.Vec2
 	TimeToPreviousFrame uint64
 }
@@ -105,12 +103,24 @@ func (game *Game) Update() {
 		body.SumForces = body.SumForces.Add(game.PushForce)
 	}
 
-	// Integrate last all bodies not in between
+	// IntegrateLinear last all bodies not in between
 	// use float64
 	// use damping factor to increase stability
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
-		body.Integrate(deltaTime)
+		body.IntegrateLinear(deltaTime)
+		bounce(body, game, windowWidth, windowHeight, deltaTime)
+	}
+
+	// IntegrateLinear last all bodies not in between
+	// use float64
+	// use damping factor to increase stability
+	torque := 200.0
+	for i := range game.Bodies {
+		body := &game.Bodies[i]
+		body.SumTorque += torque
+		body.IntegrateLinear(deltaTime)
+		body.IntegrateAngular(deltaTime)
 		bounce(body, game, windowWidth, windowHeight, deltaTime)
 	}
 }
