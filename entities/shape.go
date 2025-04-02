@@ -3,7 +3,6 @@ package entities
 import (
 	"engine/renderer"
 	"engine/vector"
-	"math"
 )
 
 type Shape interface {
@@ -53,25 +52,41 @@ func (circle *Circle) Draw(x float64, y float64, rotation float64, renderer *ren
 /*
 Polygon
 */
-type Polygon struct {
-	Color    uint32
-	Type     ShapeType
-	Vertices []vector.Vec2
+type Box struct {
+	Color         uint32
+	Type          ShapeType
+	Width         float64
+	Height        float64
+	LocalVertices []vector.Vec2
+	WorldVertices []vector.Vec2
 }
 
-func NewPolygon(color uint32, vertices []vector.Vec2) Polygon {
-	return Polygon{
-		Color:    color,
-		Type:     POLYGON,
-		Vertices: vertices,
+// Passing the renderer is termporal for now
+func NewBox(color uint32, width float64, height float64) *Box {
+	return &Box{
+		Color:  color,
+		Type:   BOX,
+		Width:  width,
+		Height: height,
+		LocalVertices: []vector.Vec2{
+			{X: -width / 2.0, Y: -height / 2.0},
+			{X: width / 2.0, Y: -height / 2.0},
+			{X: width / 2.0, Y: height / 2.0},
+			{X: -width / 2.0, Y: height / 2.0},
+		},
+		WorldVertices: []vector.Vec2{
+			{X: -width / 2.0, Y: -height / 2.0},
+			{X: width / 2.0, Y: -height / 2.0},
+			{X: width / 2.0, Y: height / 2.0},
+			{X: -width / 2.0, Y: height / 2.0},
+		},
 	}
 }
 
-func (polygon *Polygon) MomentOfInertia() float64 {
-	// TODO
-	return math.Pi
+func (box *Box) MomentOfInertia() float64 {
+	return 0.083333 * ((box.Width * box.Width) + (box.Height * box.Height))
 }
 
-func (polygon *Polygon) Draw(x float64, y float64, renderer *renderer.Renderer) {
-	// TODO
+func (box *Box) Draw(x float64, y float64, rotation float64, renderer *renderer.Renderer) {
+
 }

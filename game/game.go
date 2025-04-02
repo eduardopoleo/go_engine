@@ -20,11 +20,21 @@ type Game struct {
 
 func NewGame(name string, width int32, height int32) Game {
 	game := Game{Running: true}
-	renderer := renderer.NewRenderer(name, width, height)
-	game.Renderer = renderer
+	rendr := renderer.NewRenderer(name, width, height)
+	game.Renderer = rendr
 	game.PushForce = vector.Vec2{}
 	game.TimeToPreviousFrame = sdl.GetTicks64()
 
+	// Body *body = new Body(BoxShape(200, 100), Graphics::Width()/ 2, Graphics::Height() / 2.0, 1.0);
+
+	box := entities.NewBox(renderer.WHITE, 200, 100)
+	body := entities.Body{
+		Mass:     1.0,
+		Shape:    box,
+		Position: vector.Vec2{X: float64(width / 2.0), Y: float64(height / 2.0)},
+	}
+
+	game.Bodies = append(game.Bodies, body)
 	return game
 }
 
@@ -101,15 +111,6 @@ func (game *Game) Update() {
 		weight := physics.NewWeightForce(body.Mass)
 		body.SumForces = body.SumForces.Add(weight)
 		body.SumForces = body.SumForces.Add(game.PushForce)
-	}
-
-	// IntegrateLinear last all bodies not in between
-	// use float64
-	// use damping factor to increase stability
-	for i := range game.Bodies {
-		body := &game.Bodies[i]
-		body.IntegrateLinear(deltaTime)
-		bounce(body, game, windowWidth, windowHeight, deltaTime)
 	}
 
 	// IntegrateLinear last all bodies not in between
