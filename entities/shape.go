@@ -88,6 +88,7 @@ func (box *Box) MomentOfInertia() float64 {
 }
 
 func (box *Box) Draw(x float64, y float64, rotation float64, rendr *renderer.Renderer) {
+	rendr.DrawLine(box.WorldVertices[3], box.WorldVertices[0], renderer.WHITE)
 	for i := 1; i < len(box.WorldVertices); i++ {
 		prev := box.WorldVertices[i-1]
 		curr := box.WorldVertices[i]
