@@ -50,3 +50,15 @@ func (body *Body) IntegrateAngular(dt float64) {
 	fmt.Printf("rotations %f\n", body.Rotation)
 	body.SumTorque = 0
 }
+
+func (body *Body) Update(dt float64) {
+	body.IntegrateLinear(dt)
+	body.IntegrateAngular(dt)
+
+	if box, ok := body.Shape.(*Box); ok {
+		for i := 0; i < len(box.WorldVertices); i++ {
+			box.WorldVertices[i] = box.LocalVertices[i].Rotate(body.Rotation)
+			box.WorldVertices[i] = box.WorldVertices[i].Add(body.Position)
+		}
+	}
+}

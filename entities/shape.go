@@ -87,6 +87,12 @@ func (box *Box) MomentOfInertia() float64 {
 	return 0.083333 * ((box.Width * box.Width) + (box.Height * box.Height))
 }
 
-func (box *Box) Draw(x float64, y float64, rotation float64, renderer *renderer.Renderer) {
-
+func (box *Box) Draw(x float64, y float64, rotation float64, rendr *renderer.Renderer) {
+	for i := 1; i < len(box.WorldVertices); i++ {
+		prev := box.WorldVertices[i-1]
+		curr := box.WorldVertices[i]
+		rendr.DrawLine(prev, curr, renderer.WHITE)
+	}
+	// Just a dot in the position of the body.
+	rendr.DrawCircle(int32(x), int32(y), 1, 0, renderer.WHITE)
 }

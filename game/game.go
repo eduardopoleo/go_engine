@@ -106,11 +106,14 @@ func (game *Game) Update() {
 	windowWidth, windowHeight := game.Renderer.GetWindowSize()
 
 	// Update other bodies
+
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
-		weight := physics.NewWeightForce(body.Mass)
-		body.SumForces = body.SumForces.Add(weight)
-		body.SumForces = body.SumForces.Add(game.PushForce)
+		if _, ok := body.Shape.(*entities.Circle); ok {
+			weight := physics.NewWeightForce(body.Mass)
+			body.SumForces = body.SumForces.Add(weight)
+			body.SumForces = body.SumForces.Add(game.PushForce)
+		}
 	}
 
 	// IntegrateLinear last all bodies not in between
@@ -120,8 +123,7 @@ func (game *Game) Update() {
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
 		body.SumTorque += torque
-		body.IntegrateLinear(deltaTime)
-		body.IntegrateAngular(deltaTime)
+		body.Update(deltaTime)
 		bounce(body, game, windowWidth, windowHeight, deltaTime)
 	}
 }

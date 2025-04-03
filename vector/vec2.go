@@ -34,6 +34,13 @@ func (vec *Vec2) Magnitude() float64 {
 	return float64(math.Sqrt((float64(vec.X) * float64(vec.X)) + (float64(vec.Y) * float64(vec.Y))))
 }
 
+func (vec *Vec2) Rotate(angle float64) Vec2 {
+	return Vec2{
+		X: vec.X*math.Cos(angle) - vec.Y*math.Sin(angle),
+		Y: vec.X*math.Sin(angle) + vec.Y*math.Cos(angle),
+	}
+}
+
 func (vec *Vec2) Unit() Vec2 {
 	magnitude := vec.Magnitude()
 	return Vec2{
