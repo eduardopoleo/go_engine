@@ -2,7 +2,6 @@ package entities
 
 import (
 	"engine/vector"
-	"fmt"
 )
 
 type Body struct {
@@ -47,7 +46,6 @@ func (body *Body) IntegrateAngular(dt float64) {
 	body.AngularAcceleration = body.SumTorque * (1 / (body.Shape.MomentOfInertia() * body.Mass))
 	body.AngularVelocity += body.AngularAcceleration * dt
 	body.Rotation += body.AngularVelocity * dt
-	fmt.Printf("rotations %f\n", body.Rotation)
 	body.SumTorque = 0
 }
 
