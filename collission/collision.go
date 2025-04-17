@@ -29,7 +29,7 @@ func ResolveCollision(bodyA *entities.Body, bodyB *entities.Body) {
 	}
 
 	resolvePenetration(collision, bodyA, bodyB)
-	// resolveImpulse(collision, bodyA, bodyB)
+	resolveImpulse(collision, bodyA, bodyB)
 }
 
 func calculateCirCleCirCleCollission(bodyA *entities.Body, bodyB *entities.Body, circleA *entities.Circle, circleB *entities.Circle) *Collision {
@@ -57,10 +57,12 @@ func calculateCirCleCirCleCollission(bodyA *entities.Body, bodyB *entities.Body,
 }
 
 func resolvePenetration(collision *Collision, bodyA *entities.Body, bodyB *entities.Body) {
-	totalMass := bodyA.Mass + bodyB.Mass
+	invMassA := 1 / bodyA.Mass
+	invMassB := 1 / bodyB.Mass
+	invSum := invMassA + invMassB
 	// Calculate the % of penetration
-	da := collision.Depth * bodyA.Mass / totalMass
-	db := collision.Depth * bodyB.Mass / totalMass
+	da := collision.Depth / invSum * invMassA
+	db := collision.Depth / invSum * invMassB
 
 	// Apply to the bodies using the normal to transform the scalar into a vector.
 	bodyA.Position = bodyA.Position.Subtract(collision.Normal.Multiply(da))
@@ -68,11 +70,19 @@ func resolvePenetration(collision *Collision, bodyA *entities.Body, bodyB *entit
 }
 
 func resolveImpulse(collision *Collision, bodyA *entities.Body, bodyB *entities.Body) {
-	E := math.Min(bodyA.E, bodyB.E)
-	velRel := bodyA.Velocity.Subtract(bodyB.Velocity)
-	jMag := -(1 + E) * velRel.Dot(collision.Normal) / ((1 / bodyA.Mass) + (1 / bodyB.Mass))
-	jn := collision.Normal.Multiply(jMag)
+	e := math.Min(bodyA.E, bodyB.E)
+	relativeVelocity := bodyA.Velocity.Subtract(bodyB.Velocity)
+	velDotNormal := relativeVelocity.Dot(collision.Normal)
 
-	bodyA.Velocity = bodyA.Velocity.Add(jn)
-	bodyB.Velocity = bodyB.Velocity.Add(jn.Multiply(-1))
+	invMassA := 1.0 / bodyA.Mass
+	invMassB := 1.0 / bodyB.Mass
+
+	invMassSum := invMassA + invMassB
+
+	jMag := -(1 + e) * velDotNormal / invMassSum
+
+	impulse := collision.Normal.Multiply(jMag)
+
+	bodyA.Velocity = bodyA.Velocity.Add(impulse.Multiply(invMassA))
+	bodyB.Velocity = bodyB.Velocity.Subtract(impulse.Multiply(invMassB))
 }
