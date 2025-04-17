@@ -18,6 +18,9 @@ type Body struct {
 	AngularVelocity     float64
 	AngularAcceleration float64
 	SumTorque           float64
+
+	// Impulse
+	E float64 // coefficient of restituation
 }
 
 func (body *Body) IntegrateLinear(dt float64) {

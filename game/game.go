@@ -1,6 +1,7 @@
 package game
 
 import (
+	"engine/collission"
 	"engine/constants"
 	"engine/entities"
 	"engine/physics"
@@ -27,14 +28,6 @@ func NewGame(name string, width int32, height int32) Game {
 
 	// Body *body = new Body(BoxShape(200, 100), Graphics::Width()/ 2, Graphics::Height() / 2.0, 1.0);
 
-	box := entities.NewBox(renderer.WHITE, 200, 100)
-	body := entities.Body{
-		Mass:     1.0,
-		Shape:    box,
-		Position: vector.Vec2{X: float64(width / 2.0), Y: float64(height / 2.0)},
-	}
-
-	game.Bodies = append(game.Bodies, body)
 	return game
 }
 
@@ -74,6 +67,7 @@ func (game *Game) Input() {
 				body := entities.Body{
 					Position: vector.Vec2{X: mouseX, Y: mouseY},
 					Mass:     2.0,
+					E:        0.9,
 				}
 				body.Shape = entities.NewCircle(20, renderer.WHITE)
 				game.Bodies = append(game.Bodies, body)
@@ -116,13 +110,20 @@ func (game *Game) Update() {
 		}
 	}
 
+	// Check and resolve collisions for all bodies
+	for a := 0; a < len(game.Bodies)-1; a++ {
+		for b := a + 1; b < len(game.Bodies); b++ {
+			bodyA := &game.Bodies[a]
+			bodyB := &game.Bodies[b]
+			collission.ResolveCollision(bodyA, bodyB)
+		}
+	}
+
 	// IntegrateLinear last all bodies not in between
 	// use float64
 	// use damping factor to increase stability
-	torque := 200.0
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
-		body.SumTorque += torque
 		body.Update(deltaTime)
 		bounce(body, game, windowWidth, windowHeight, deltaTime)
 	}
