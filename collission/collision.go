@@ -42,7 +42,7 @@ func calculateCirCleCirCleCollission(bodyA *entities.Body, bodyB *entities.Body,
 	collisionNormal := d.Unit()
 
 	start := bodyB.Position.Subtract(collisionNormal.Multiply(float64(circleB.Radius)))
-	end := bodyA.Position.Subtract(collisionNormal.Multiply(float64(circleA.Radius)))
+	end := bodyA.Position.Add(collisionNormal.Multiply(float64(circleA.Radius)))
 	dep := end.Subtract(start)
 	depth := dep.Magnitude()
 
