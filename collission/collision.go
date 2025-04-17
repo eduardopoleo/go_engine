@@ -16,6 +16,10 @@ type Collision struct {
 }
 
 func ResolveCollision(bodyA *entities.Body, bodyB *entities.Body) {
+	if bodyA.Static && bodyB.Static {
+		return
+	}
+
 	circleA, isCircleA := bodyA.Shape.(*entities.Circle)
 	circleB, isCircleB := bodyB.Shape.(*entities.Circle)
 
@@ -83,6 +87,11 @@ func resolveImpulse(collision *Collision, bodyA *entities.Body, bodyB *entities.
 
 	impulse := collision.Normal.Multiply(jMag)
 
-	bodyA.Velocity = bodyA.Velocity.Add(impulse.Multiply(invMassA))
-	bodyB.Velocity = bodyB.Velocity.Subtract(impulse.Multiply(invMassB))
+	if !bodyA.Static {
+		bodyA.Velocity = bodyA.Velocity.Add(impulse.Multiply(invMassA))
+	}
+
+	if !bodyB.Static {
+		bodyB.Velocity = bodyB.Velocity.Subtract(impulse.Multiply(invMassB))
+	}
 }

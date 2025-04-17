@@ -5,6 +5,8 @@ import (
 )
 
 type Body struct {
+	Static bool
+
 	// Linear properties
 	Mass         float64
 	Position     vector.Vec2
@@ -24,7 +26,7 @@ type Body struct {
 }
 
 func (body *Body) IntegrateLinear(dt float64) {
-	if body.Mass == 0 {
+	if body.Mass == 0 || body.Static {
 		return
 	}
 
@@ -42,7 +44,7 @@ func (body *Body) IntegrateLinear(dt float64) {
 }
 
 func (body *Body) IntegrateAngular(dt float64) {
-	if body.Mass == 0 {
+	if body.Mass == 0 || body.Static {
 		return
 	}
 
