@@ -3,6 +3,7 @@ package collission
 import (
 	"engine/entities"
 	"engine/vector"
+	"fmt"
 	"math"
 )
 
@@ -61,6 +62,12 @@ func calculateCirCleCirCleCollission(bodyA *entities.Body, bodyB *entities.Body,
 }
 
 func resolvePenetration(collision *Collision, bodyA *entities.Body, bodyB *entities.Body) {
+	fmt.Printf("penetration %f\n", collision.Depth)
+	const minPenetration = 0.5
+	if collision.Depth < minPenetration {
+		return
+	}
+
 	invMassA := 1 / bodyA.Mass
 	invMassB := 1 / bodyB.Mass
 	invSum := invMassA + invMassB

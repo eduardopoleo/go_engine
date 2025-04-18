@@ -141,19 +141,20 @@ func (game *Game) Draw() {
 }
 
 func bounce(body *entities.Body, game *Game, windowWidth float64, windowHeight float64, deltaTime float64) {
+	padding := 5.0
 	if circle, ok := body.Shape.(*entities.Circle); ok {
 		if (body.Position.X - float64(circle.Radius)) <= 0 {
 			body.Velocity.X = -constants.RESTITUTION_COEFFICIENT * body.Velocity.X
-			body.Position.X = float64(circle.Radius)
+			body.Position.X = float64(circle.Radius) + padding
 		} else if (body.Position.X + float64(circle.Radius)) >= windowWidth {
 			body.Velocity.X = -constants.RESTITUTION_COEFFICIENT * body.Velocity.X
-			body.Position.X = windowWidth - float64(circle.Radius)
+			body.Position.X = windowWidth - float64(circle.Radius) - padding
 		} else if (body.Position.Y - float64(circle.Radius)) <= 0 {
 			body.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * body.Velocity.Y
-			body.Position.Y = float64(circle.Radius)
+			body.Position.Y = float64(circle.Radius) + padding
 		} else if (body.Position.Y + float64(circle.Radius)) >= windowHeight {
 			body.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * body.Velocity.Y
-			body.Position.Y = windowHeight - float64(circle.Radius)
+			body.Position.Y = windowHeight - float64(circle.Radius) - padding
 		}
 	}
 }
