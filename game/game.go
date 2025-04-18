@@ -141,7 +141,7 @@ func (game *Game) Draw() {
 }
 
 func bounce(body *entities.Body, game *Game, windowWidth float64, windowHeight float64, deltaTime float64) {
-	padding := 5.0
+	padding := 0.1
 	if circle, ok := body.Shape.(*entities.Circle); ok {
 		if (body.Position.X - float64(circle.Radius)) <= 0 {
 			body.Velocity.X = -constants.RESTITUTION_COEFFICIENT * body.Velocity.X
