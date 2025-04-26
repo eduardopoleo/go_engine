@@ -7,7 +7,6 @@ import (
 	"engine/physics"
 	"engine/renderer"
 	"engine/vector"
-	"fmt"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -129,19 +128,8 @@ func (game *Game) Update() {
 
 			collision := collision.CalculatePolygonPolygonCollision(bodyA, bodyB, polygonA, polygonB)
 
-			// return &Collision{
-			// 	BodyA:  *bodyA,
-			// 	BodyB:  *bodyB,
-			// 	Depth:  depth,
-			// 	Normal: normal,
-			// 	Start:  start,
-			// 	End:    end,
-			// }
-
 			game.Renderer.ClearScreen()
 			if collision != nil {
-				fmt.Printf("got here!\n", collision)
-				fmt.Printf("\n")
 				game.Renderer.DrawFilledCircle(int32(collision.Start.X), int32(collision.Start.Y), 1, renderer.RED)
 				game.Renderer.DrawFilledCircle(int32(collision.End.X), int32(collision.End.Y), 1, renderer.RED)
 
