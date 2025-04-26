@@ -14,8 +14,8 @@ type ShapeType int
 
 const (
 	CIRCLE ShapeType = iota
-	POLYGON
 	BOX
+	POLYGON
 )
 
 /*
@@ -52,22 +52,18 @@ func (circle *Circle) Draw(x float64, y float64, rotation float64, renderer *ren
 /*
 Polygon
 */
-type Box struct {
+type Polygon struct {
 	Color         uint32
 	Type          ShapeType
-	Width         float64
-	Height        float64
 	LocalVertices []vector.Vec2
 	WorldVertices []vector.Vec2
 }
 
 // Passing the renderer is termporal for now
-func NewBox(color uint32, width float64, height float64) *Box {
-	return &Box{
-		Color:  color,
-		Type:   BOX,
-		Width:  width,
-		Height: height,
+func NewBox(color uint32, width float64, height float64) *Polygon {
+	return &Polygon{
+		Color: color,
+		Type:  BOX,
 		LocalVertices: []vector.Vec2{
 			{X: -width / 2.0, Y: -height / 2.0},
 			{X: width / 2.0, Y: -height / 2.0},
@@ -83,11 +79,28 @@ func NewBox(color uint32, width float64, height float64) *Box {
 	}
 }
 
-func (box *Box) MomentOfInertia() float64 {
-	return 0.083333 * ((box.Width * box.Width) + (box.Height * box.Height))
+/*
+TODO: How do we extend this interface for shapes with different amount of vertices.
+How do calculate the momentOfInertia for a shape do not know?
+*/
+func (polygon *Polygon) MomentOfInertia() float64 {
+	switch polygonType := polygon.Type; polygonType {
+	case BOX:
+		v10 := polygon.LocalVertices[1].Subtract(polygon.LocalVertices[0])
+		v30 := polygon.LocalVertices[3].Subtract(polygon.LocalVertices[0])
+
+		width := v10.Magnitude()
+		height := v30.Magnitude()
+
+		return 0.083333 * ((width * width) + (height * height))
+	}
+	/*
+		How do you return error?
+	*/
+	return 0
 }
 
-func (box *Box) Draw(x float64, y float64, rotation float64, rendr *renderer.Renderer) {
+func (box *Polygon) Draw(x float64, y float64, rotation float64, rendr *renderer.Renderer) {
 	rendr.DrawLine(box.WorldVertices[3], box.WorldVertices[0], renderer.WHITE)
 	for i := 1; i < len(box.WorldVertices); i++ {
 		prev := box.WorldVertices[i-1]
