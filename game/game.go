@@ -145,10 +145,8 @@ func (game *Game) Update() {
 				game.Renderer.DrawFilledCircle(int32(collision.Start.X), int32(collision.Start.Y), 1, renderer.RED)
 				game.Renderer.DrawFilledCircle(int32(collision.End.X), int32(collision.End.Y), 1, renderer.RED)
 
-				// unitEnd := collision.End.Subtract(collision.Start)
-				// unitEnd = unitEnd.Unit()
-
-				// game.Renderer.DrawLine(collision.Start, unitEnd, renderer.RED)
+				drawEnd := collision.Start.Add(collision.Normal.Multiply(15))
+				game.Renderer.DrawLine(collision.Start, drawEnd, renderer.RED)
 			}
 		}
 	}
