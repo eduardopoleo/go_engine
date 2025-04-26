@@ -43,6 +43,18 @@ func (body *Body) IntegrateLinear(dt float64) {
 	body.SumForces = vector.Vec2{X: 0, Y: 0}
 }
 
+func NewBoxBody(color uint32, width float64, height float64, mass float64, position vector.Vec2, rotation float64) Body {
+	newBoxShape := NewBox(color, width, height)
+	box := Body{
+		Position: position,
+		Mass:     mass,
+		Shape:    newBoxShape,
+		Rotation: rotation,
+	}
+	box.Shape = newBoxShape
+	return box
+}
+
 func (body *Body) IntegrateAngular(dt float64) {
 	if body.Mass == 0 || body.Static {
 		return

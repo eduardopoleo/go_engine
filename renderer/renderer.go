@@ -56,6 +56,7 @@ const (
 	KEYDOWN        string = "KEYDOWN"
 	KEYUP          string = "KEYUP"
 	MOUSE_UP_EVENT string = "MOUSE_UP_EVENT"
+	MOUSEMOTION    string = "MOUSEMOTION"
 )
 
 // Keys
@@ -93,6 +94,8 @@ func (renderer *Renderer) PollEvent() *Event {
 		if mouseEvent.Type == sdl.MOUSEBUTTONUP {
 			event.Type = MOUSE_UP_EVENT
 		}
+	} else if _, ok := sdlEvent.(*sdl.MouseMotionEvent); ok {
+		event.Type = MOUSEMOTION
 	}
 	return event
 }

@@ -26,7 +26,13 @@ func NewGame(name string, width int32, height int32) Game {
 	game.PushForce = vector.Vec2{}
 	game.TimeToPreviousFrame = sdl.GetTicks64()
 
-	// Body *body = new Body(BoxShape(200, 100), Graphics::Width()/ 2, Graphics::Height() / 2.0, 1.0);
+	game.Bodies = append(game.Bodies, entities.NewBoxBody(
+		renderer.WHITE, 100, 100, 2, vector.Vec2{X: 300, Y: 300}, 0,
+	))
+
+	game.Bodies = append(game.Bodies, entities.NewBoxBody(
+		renderer.WHITE, 100, 100, 2, vector.Vec2{X: 300, Y: 500}, 2.3,
+	))
 
 	return game
 }
@@ -61,19 +67,21 @@ func (game *Game) Input() {
 			} else if event.Key() == renderer.DOWN_ARROW {
 				game.PushForce.Y = 0
 			}
-		case renderer.MOUSE_UP_EVENT:
-			if event.Key() == renderer.BUTTON_LEFT {
-				mouseX, mouseY := game.Renderer.GetMouseCoordinates()
-				body := entities.Body{
-					Position: vector.Vec2{X: mouseX, Y: mouseY},
-					Mass:     2.0,
-					E:        0.9,
-				}
-				body.Shape = entities.NewCircle(20, renderer.WHITE)
-				game.Bodies = append(game.Bodies, body)
+		case renderer.MOUSEMOTION:
+			x, y, _ := sdl.GetMouseState()
+			box2 := &game.Bodies[1]
+			box2.Position = vector.Vec2{X: float64(x), Y: float64(y)}
+
+			if event.Key() == renderer.LEFT_ARROW {
+				game.PushForce.X = 0
+			} else if event.Key() == renderer.RIGHT_ARROW {
+				game.PushForce.X = 0
+			} else if event.Key() == renderer.UP_ARROW {
+				game.PushForce.Y = 0
+			} else if event.Key() == renderer.DOWN_ARROW {
+				game.PushForce.Y = 0
 			}
 		}
-
 	}
 }
 
@@ -134,6 +142,7 @@ func (game *Game) Draw() {
 
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
+		// fmt.Printf("coordinates for body i, %d X %f, Y %f\n", i, body.Position.X, body.Position.Y)
 		body.Shape.Draw(body.Position.X, body.Position.Y, body.Rotation, &game.Renderer)
 	}
 
