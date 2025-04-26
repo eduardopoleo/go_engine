@@ -1,12 +1,13 @@
 package game
 
 import (
-	"engine/collission"
+	"engine/collision"
 	"engine/constants"
 	"engine/entities"
 	"engine/physics"
 	"engine/renderer"
 	"engine/vector"
+	"fmt"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -123,7 +124,32 @@ func (game *Game) Update() {
 		for b := a + 1; b < len(game.Bodies); b++ {
 			bodyA := &game.Bodies[a]
 			bodyB := &game.Bodies[b]
-			collission.ResolveCollision(bodyA, bodyB)
+			polygonA, _ := bodyA.Shape.(*entities.Polygon)
+			polygonB, _ := bodyB.Shape.(*entities.Polygon)
+
+			collision := collision.CalculatePolygonPolygonCollision(bodyA, bodyB, polygonA, polygonB)
+
+			// return &Collision{
+			// 	BodyA:  *bodyA,
+			// 	BodyB:  *bodyB,
+			// 	Depth:  depth,
+			// 	Normal: normal,
+			// 	Start:  start,
+			// 	End:    end,
+			// }
+
+			game.Renderer.ClearScreen()
+			if collision != nil {
+				fmt.Printf("got here!\n", collision)
+				fmt.Printf("\n")
+				game.Renderer.DrawFilledCircle(int32(collision.Start.X), int32(collision.Start.Y), 1, renderer.RED)
+				game.Renderer.DrawFilledCircle(int32(collision.End.X), int32(collision.End.Y), 1, renderer.RED)
+
+				// unitEnd := collision.End.Subtract(collision.Start)
+				// unitEnd = unitEnd.Unit()
+
+				// game.Renderer.DrawLine(collision.Start, unitEnd, renderer.RED)
+			}
 		}
 	}
 
@@ -138,7 +164,6 @@ func (game *Game) Update() {
 }
 
 func (game *Game) Draw() {
-	game.Renderer.ClearScreen()
 
 	for i := range game.Bodies {
 		body := &game.Bodies[i]

@@ -54,3 +54,11 @@ func (a *Vec2) Unit() Vec2 {
 		Y: a.Y / magnitude,
 	}
 }
+
+func (vec *Vec2) Normal() Vec2 {
+	magnitude := vec.Magnitude()
+	return Vec2{
+		X: vec.Y / magnitude,
+		Y: -vec.X / magnitude,
+	}
+}

@@ -47,6 +47,7 @@ func (renderer *Renderer) Destroy() {
 
 const (
 	WHITE uint32 = 0xFFFFFFFF
+	RED   uint32 = 0xFF0000FF
 )
 
 // Events type

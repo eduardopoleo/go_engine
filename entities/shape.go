@@ -100,6 +100,11 @@ func (polygon *Polygon) MomentOfInertia() float64 {
 	return 0
 }
 
+func (polygon *Polygon) EdgeAt(idx int) vector.Vec2 {
+	nextIdx := (idx + 1) % len(polygon.WorldVertices)
+	return polygon.WorldVertices[nextIdx].Subtract(polygon.WorldVertices[idx])
+}
+
 func (box *Polygon) Draw(x float64, y float64, rotation float64, rendr *renderer.Renderer) {
 	rendr.DrawLine(box.WorldVertices[3], box.WorldVertices[0], renderer.WHITE)
 	for i := 1; i < len(box.WorldVertices); i++ {
