@@ -130,8 +130,8 @@ func (game *Game) Update() {
 
 			game.Renderer.ClearScreen()
 			if collision != nil {
-				game.Renderer.DrawFilledCircle(int32(collision.Start.X), int32(collision.Start.Y), 1, renderer.RED)
-				game.Renderer.DrawFilledCircle(int32(collision.End.X), int32(collision.End.Y), 1, renderer.RED)
+				game.Renderer.DrawFilledCircle(int32(collision.Start.X), int32(collision.Start.Y), 2, renderer.RED)
+				game.Renderer.DrawFilledCircle(int32(collision.End.X), int32(collision.End.Y), 2, renderer.RED)
 
 				drawEnd := collision.Start.Add(collision.Normal.Multiply(15))
 				game.Renderer.DrawLine(collision.Start, drawEnd, renderer.RED)

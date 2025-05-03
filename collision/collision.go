@@ -3,6 +3,7 @@ package collision
 import (
 	"engine/entities"
 	"engine/vector"
+	"fmt"
 	"math"
 )
 
@@ -68,8 +69,8 @@ func calculateCirCleCirCleCollission(bodyA *entities.Body, bodyB *entities.Body,
 }
 
 func CalculatePolygonPolygonCollision(bodyA *entities.Body, bodyB *entities.Body, polygonA *entities.Polygon, polygonB *entities.Polygon) *Collision {
-	penetrationAB, edgeA, vertexA := calculatePenetration(polygonA, polygonB)
-	penetrationBA, edgeB, vertexB := calculatePenetration(polygonB, polygonA)
+	penetrationAB, edgeA, vertexB := calculatePenetration(polygonA, polygonB)
+	penetrationBA, edgeB, vertexA := calculatePenetration(polygonB, polygonA)
 
 	/*
 		If the max penetration for both is positive it means that there was no collision
@@ -84,19 +85,22 @@ func CalculatePolygonPolygonCollision(bodyA *entities.Body, bodyB *entities.Body
 	var end vector.Vec2
 	/*
 		We want to resolve the smallest penetration in this case the highest value.
-		Highest value (less negative) means less penetration
+		Highest value (less negative) means less penetration.
+
+		depth needs to be positive because both penetrationAB penetrationBA are negative by definition are negative we need to multiply by -
 	*/
 	if penetrationAB >= penetrationBA {
 		depth = -penetrationAB
 		normal = edgeA.Normal()
-		start = vertexA
-		end = vertexA.Add(normal.Multiply(depth))
+		start = vertexB
+		end = vertexB.Add(normal.Multiply(depth))
 	} else {
+		fmt.Print("GOt to this case")
 		depth = -penetrationBA
-		normal = edgeB.Normal()
-		normal = normal.Multiply(-1)
-		start = vertexB.Subtract(normal.Multiply(depth))
-		end = vertexB
+		edgeBNormal := edgeB.Normal()
+		normal = edgeBNormal.Multiply(-1) // We need to go from A->B
+		start = vertexA.Add(edgeBNormal.Multiply(depth))
+		end = vertexA
 	}
 
 	return &Collision{
