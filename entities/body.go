@@ -36,20 +36,20 @@ func (body *Body) IntegrateLinear(dt float64) {
 	dampingFactor := 0.99
 	body.Velocity = body.Velocity.Add(body.Acceleration.Multiply(dt))
 	body.Velocity = body.Velocity.Multiply(dampingFactor)
-
 	// Then update position
 	body.Position = body.Position.Add(body.Velocity.Multiply(dt))
 
 	body.SumForces = vector.Vec2{X: 0, Y: 0}
 }
 
-func NewBoxBody(color uint32, width float64, height float64, mass float64, position vector.Vec2, rotation float64) Body {
+func NewBoxBody(color uint32, width float64, height float64, mass float64, position vector.Vec2, rotation float64, static bool) Body {
 	newBoxShape := NewBox(color, width, height)
 	box := Body{
 		Position: position,
 		Mass:     mass,
 		Shape:    newBoxShape,
 		Rotation: rotation,
+		Static:   static,
 	}
 	box.Shape = newBoxShape
 	return box

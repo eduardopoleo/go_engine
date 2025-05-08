@@ -26,13 +26,28 @@ func NewGame(name string, width int32, height int32) Game {
 	game.PushForce = vector.Vec2{}
 	game.TimeToPreviousFrame = sdl.GetTicks64()
 
-	game.Bodies = append(game.Bodies, entities.NewBoxBody(
-		renderer.WHITE, 100, 100, 2, vector.Vec2{X: 300, Y: 300}, 0,
-	))
+	bottom := entities.NewBoxBody(
+		renderer.WHITE, float64(width-20), 50, 2, vector.Vec2{X: float64(width / 2), Y: float64(height - 20)}, 0, true,
+	)
 
-	game.Bodies = append(game.Bodies, entities.NewBoxBody(
-		renderer.WHITE, 100, 100, 2, vector.Vec2{X: 300, Y: 500}, 2.3,
-	))
+	left := entities.NewBoxBody(
+		renderer.WHITE, 50, float64(height-20), 2, vector.Vec2{X: 20, Y: float64(height / 2)}, 0, true,
+	)
+
+	right := entities.NewBoxBody(
+		renderer.WHITE, 50, float64(height-20), 2, vector.Vec2{X: float64(width - 20), Y: float64(height / 2)}, 0, true,
+	)
+
+	bigBox := entities.NewBoxBody(
+		renderer.WHITE, 150, 150, 2, vector.Vec2{X: float64(width / 2), Y: float64(height / 2)}, 0, true,
+	)
+
+	bigBox.Rotation = 1.4
+
+	game.Bodies = append(game.Bodies, bottom)
+	game.Bodies = append(game.Bodies, left)
+	game.Bodies = append(game.Bodies, right)
+	game.Bodies = append(game.Bodies, bigBox)
 
 	return game
 }
@@ -67,20 +82,13 @@ func (game *Game) Input() {
 			} else if event.Key() == renderer.DOWN_ARROW {
 				game.PushForce.Y = 0
 			}
-		case renderer.MOUSEMOTION:
+		case renderer.MOUSE_UP_EVENT:
 			x, y, _ := sdl.GetMouseState()
-			box2 := &game.Bodies[1]
-			box2.Position = vector.Vec2{X: float64(x), Y: float64(y)}
 
-			if event.Key() == renderer.LEFT_ARROW {
-				game.PushForce.X = 0
-			} else if event.Key() == renderer.RIGHT_ARROW {
-				game.PushForce.X = 0
-			} else if event.Key() == renderer.UP_ARROW {
-				game.PushForce.Y = 0
-			} else if event.Key() == renderer.DOWN_ARROW {
-				game.PushForce.Y = 0
-			}
+			newBox := entities.NewBoxBody(
+				renderer.WHITE, 50, 50, 2, vector.Vec2{X: float64(x), Y: float64(y)}, 0, false,
+			)
+			game.Bodies = append(game.Bodies, newBox)
 		}
 	}
 }
@@ -111,11 +119,9 @@ func (game *Game) Update() {
 
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
-		if _, ok := body.Shape.(*entities.Circle); ok {
-			weight := physics.NewWeightForce(body.Mass)
-			body.SumForces = body.SumForces.Add(weight)
-			body.SumForces = body.SumForces.Add(game.PushForce)
-		}
+		weight := physics.NewWeightForce(body.Mass)
+		body.SumForces = body.SumForces.Add(weight)
+		body.SumForces = body.SumForces.Add(game.PushForce)
 	}
 
 	// Check and resolve collisions for all bodies
