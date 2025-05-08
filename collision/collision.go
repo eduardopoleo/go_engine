@@ -3,7 +3,6 @@ package collision
 import (
 	"engine/entities"
 	"engine/vector"
-	"fmt"
 	"math"
 )
 
@@ -95,7 +94,6 @@ func CalculatePolygonPolygonCollision(bodyA *entities.Body, bodyB *entities.Body
 		start = vertexB
 		end = vertexB.Add(normal.Multiply(depth))
 	} else {
-		fmt.Print("GOt to this case")
 		depth = -penetrationBA
 		edgeBNormal := edgeB.Normal()
 		normal = edgeBNormal.Multiply(-1) // We need to go from A->B

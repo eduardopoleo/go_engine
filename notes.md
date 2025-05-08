@@ -135,16 +135,16 @@ We can use the concept of impulse to calculate the resulting velocity of the col
 
 Impulse is the application of a force for a given period of time 
 
-$$ J = \vec{F} \cdot\ dt $$
+$$ J\hat{n} = \vec{F} \cdot\ dt $$
 
-From there we can find an expression for the body's velocity based as a function of the impulse using Newton's Second Law of Motion 
+Notice that we need to consider J along ther normal in this case the normal is the direction of collision and J is the magnitude, other way to see it is that scaling the normal vector by the maginitude of J. From there we can find an expression for the body's velocity based as a function of the impulse using Newton's Second Law of Motion 
 
 $$ 
-  J = m \cdot\ \vec{a} \cdot\ dt \\[10pt]
-  J = m \cdot\ \frac{d\vec{v}}{dt} \cdot\ dt\\[10pt]
-  J = m \cdot\ d\vec{v} \\[10pt]
-  J = m \cdot\ (\vec{v2} - \vec{v1}) \\[10pt]
-  \vec{v_f} = \vec{v_i} + \frac{J}{m}
+  J\hat{n} = m \cdot\ \vec{a} \cdot\ dt \\[10pt]
+  J\hat{n} = m \cdot\ \frac{d\vec{v}}{dt} \cdot\ dt\\[10pt]
+  J\hat{n} = m \cdot\ d\vec{v} \\[10pt]
+  J\hat{n} = m \cdot\ (\vec{v2} - \vec{v1}) \\[10pt]
+  \vec{v_f} = \vec{v_i} + \frac{J\hat{n}}{m}
 $$
 
 Now because we're dealing with collition of two bodies, say A and B, we know a couple of things
@@ -154,8 +154,8 @@ Now because we're dealing with collition of two bodies, say A and B, we know a c
 $$
   J = J_a = -J_b\\[10pt]
 
-  (1) \quad \quad \vec{v_{fa}} = \vec{v_{ia}} + \frac{J}{m_a}\\[10pt] 
-  (2) \quad \quad \vec{v_{fb}} = \vec{v_{ib}} - \frac{J}{m_b}\\[10pt]
+  (1) \quad \quad \vec{v_{fa}} = \vec{v_{ia}} + \frac{J\hat{n}}{m_a}\\[10pt] 
+  (2) \quad \quad \vec{v_{fb}} = \vec{v_{ib}} - \frac{J\hat{n}}{m_b}\\[10pt]
 $$
 
 Now the problem here is that we have three unknowns $v_{fa}$, $v_{fb}$, $J$, the initial velocities and the bodies' masses are known, but we only only have 2 equations. So we need one more to be able to solve this system. Fortunately, we can also express the bodies relative velocity as a function of the bodies restitution coeficcient.
@@ -256,3 +256,112 @@ If ab < ba {
   end = vertexA
 }
 ```
+
+### Resolution
+To properly resolve collision we also need to consider rotation and to do that we need to understand the concept of angular Impulse which while analogous to linear impulse is slightly different. We need to calculate the velocity at the point of contact which can be described as:
+$$
+V = v + (w \times r)
+$$
+Where:
+- V is the velocoty at the point of contact
+- v is hte linear velocity
+- w is the angular velocity
+- r is the vector distance from the point of contact to the center of mass.
+
+**Axiom: w X r**
+
+This makes sense if you put a rotating ball to move on an axis and realize that the outward rotating point reaches some points faster that the center of mass.
+
+The idea here is to obtain an expression of the final velocities as a function of the initial state with the help of impulse. We already know the defintion of the linear velocities
+
+$$
+v_f = v_i + \frac{J\hat{n}}{m}
+$$
+
+But now we need to find a similar expression for the `w`. For that we need to consider 3 equations:
+
+$$
+1) \quad 𝜏 = r \times F\\[10pt]
+2) \quad 𝜏 = Iα\\[10pt]
+3) \quad J_{ang} \vec{n} = 𝜏 Δt
+$$
+
+Notice how 2 and 3 are analogous to the linear `F = M * a` and `J = F * dt` but we also need to account that the torque is a measure of how much the body is rotating which on in it self depends on where the force is being applied. if the force is applied directly in the center of mass the object won't rotate at all. The farther away we move from the center of mass the higher the torque will be. This is the intuation that's being captured by equation `1)`.
+
+Substituting 2 into 3
+
+$$
+J_{ang}\vec{n} = I\vec{α} Δt\\[10pt]
+J_{ang}\vec{n} = I\frac{\vec{Δw}}{Δt} Δt\\[10pt]
+J_{ang} \vec{n}= I\vec{Δw}\\[10pt]
+4) \quad \vec{w_f} = \vec{w_i} + \frac{{J_{ang}\vec{n}}}{I}
+$$
+
+Now we express $J_{ang}$ as a function of the linear impulse which we know how to calcuate already by substituing 1) into 3
+
+$$
+J_{ang}\vec{n} = r \times F Δt\\[10pt]
+5) \quad J_{ang}\vec{n} = r \times J\vec{n}
+$$
+
+This above is the key insight, the angular momentum needs to account for the distance to the center of mass since it deals with rotation. So it's not quite the same as the linear momentum.
+
+Substiuting 5 into 4
+
+$$
+\vec{w_f} = \vec{w_i} + \frac{r \times J\vec{n}}{I}
+$$
+
+**NOTE:The abov
+
+To recap we know have
+- an equation to calculate the total velocity at a point as a function of it's linear and angular velocity
+- an equation for the linear velocity as a function of impulse and initial state
+- an equation for angular velocity as a function of impulse and initia state
+
+$$
+V = v + (w \times r)\\[10pt]
+v_f = v_i + \frac{J\hat{n}}{m}\\[10pt]
+\vec{w_f} = \vec{w_i} + \frac{r \times J\vec{n}}{I}\\[10pt]
+$$
+
+Putting this together for a collission system of two objects `a` and `b` we get:
+
+$$
+\vec{V_a} = \vec{v_a} + (\vec{w_a} \times \vec{r})\\[10pt]
+\vec{V_b} = \vec{v_b} + (\vec{w_b} \times \vec{r})\\[10pt]
+
+\vec{v_{f_a}} = \vec{v_{i_a}} - \frac{J\hat{n}}{m_a}\\[10pt]
+\vec{v_{f_b}} = \vec{v_{i_b}} + \frac{J\hat{n}}{m_b}\\[10pt]
+
+\vec{w_{f_a}} = \vec{w_{i_a}} - \frac{\vec{r_a} \times J\vec{n}}{I_a}\\[10pt]
+\vec{w_{f_b}} = \vec{w_{i_b}} + \frac{\vec{r_b} \times J\vec{n}}{I_b}\\[10pt]
+$$
+
+Substituting into one into the other and doing some algebra we can get the following expressions for the final Velocities as functions of the initial state and J.
+$$
+V_{f_a} = (v_{i_a}+ w_{i_a} \times r_a) - \frac{J\hat{n}}{m_a} - J (\frac{r_a\times \hat{n}}{I_a}) \times r_a\\[10pt]
+V_{f_b} = (v_{i_b}+ w_{i_b} \times r_b) + \frac{J\hat{n}}{m_b} + J (\frac{r_b\times \hat{n}}{I_b}) \times r_b\\[10pt]
+
+$$
+
+We now have functions of the total velocities as a function of the initial states and the impulses but we still need to define impulse to fully described the systems. In a system of collission we also have the equation of the restitution coefficient and the relative velocity
+
+$$
+V_{rel_f}\hat{n} = -e(V_{rel_i}\hat{n})\\[10pt]
+(V_{f_a} - V_{f_b}) = -e(V_{rel_i}\hat{n})\\
+$$
+
+plugging the above equations into this new one and doing the algebra to isolate J we have
+
+$$
+J  = \frac{-(1+e)(V_{rel_i} \cdot \hat{n})}{((\frac{1}{m_a} + \frac{1}{m_b}) \cdot \hat{n} + (\frac{r_a \times \hat{n}}{I_a} \times r_a ) + (\frac{r_b \times \hat{n}}{I_b} \times r_b)) \cdot \hat{n}}
+$$
+
+A further non trivial simplifying shows that:
+
+$$
+J  = \frac{-(1+e)(V_{rel_i} \cdot \hat{n})}{\frac{1}{m_a} + \frac{1}{m_b} + \frac{(r_a \times \hat{n})^2}{I_a} + \frac{(r_b \times \hat{n})^2}{I_b}}
+$$
+
+This final form is useful becasue in our 2D engine r X n is going to be treated as
