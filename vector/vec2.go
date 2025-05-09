@@ -27,6 +27,16 @@ func (a *Vec2) Dot(b Vec2) float64 {
 	return a.X*b.X + a.Y*b.Y
 }
 
+/*
+a = [Ax, Ay]
+b = [Bx, By]
+
+Ax * By - Ay * Bx
+*/
+func (a *Vec2) Cross(b Vec2) float64 {
+	return a.X*b.Y - a.Y*b.X
+}
+
 // Scale could be a better name for this
 func (a *Vec2) Multiply(n float64) Vec2 {
 	return Vec2{

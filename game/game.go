@@ -129,19 +129,7 @@ func (game *Game) Update() {
 		for b := a + 1; b < len(game.Bodies); b++ {
 			bodyA := &game.Bodies[a]
 			bodyB := &game.Bodies[b]
-			polygonA, _ := bodyA.Shape.(*entities.Polygon)
-			polygonB, _ := bodyB.Shape.(*entities.Polygon)
-
-			collision := collision.CalculatePolygonPolygonCollision(bodyA, bodyB, polygonA, polygonB)
-
-			game.Renderer.ClearScreen()
-			if collision != nil {
-				game.Renderer.DrawFilledCircle(int32(collision.Start.X), int32(collision.Start.Y), 2, renderer.RED)
-				game.Renderer.DrawFilledCircle(int32(collision.End.X), int32(collision.End.Y), 2, renderer.RED)
-
-				drawEnd := collision.Start.Add(collision.Normal.Multiply(15))
-				game.Renderer.DrawLine(collision.Start, drawEnd, renderer.RED)
-			}
+			collision.ResolveCollision(bodyA, bodyB)
 		}
 	}
 

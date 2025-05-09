@@ -2,6 +2,7 @@ package collision
 
 import (
 	"engine/entities"
+	"engine/renderer"
 	"engine/vector"
 	"math"
 )
@@ -39,8 +40,8 @@ func ResolveCollision(bodyA *entities.Body, bodyB *entities.Body) {
 		return
 	}
 
-	// resolvePenetration(collision, bodyA, bodyB)
-	// resolveImpulse(collision, bodyA, bodyB)
+	resolvePenetration(collision, bodyA, bodyB)
+	resolveImpulse(collision, bodyA, bodyB)
 }
 
 func calculateCirCleCirCleCollission(bodyA *entities.Body, bodyB *entities.Body, circleA *entities.Circle, circleB *entities.Circle) *Collision {
@@ -158,25 +159,72 @@ func resolvePenetration(collision *Collision, bodyA *entities.Body, bodyB *entit
 	bodyB.Position = bodyB.Position.Add(collision.Normal.Multiply(db))
 }
 
+// func resolveImpulse(collision *Collision, bodyA *entities.Body, bodyB *entities.Body) {
+// 	e := math.Min(bodyA.E, bodyB.E)
+// 	relativeVelocity := bodyA.Velocity.Subtract(bodyB.Velocity)
+// 	velDotNormal := relativeVelocity.Dot(collision.Normal)
+
+// 	invMassA := 1.0 / bodyA.Mass
+// 	invMassB := 1.0 / bodyB.Mass
+
+// 	invMassSum := invMassA + invMassB
+
+// 	jMag := -(1 + e) * velDotNormal / invMassSum
+
+// 	impulse := collision.Normal.Multiply(jMag)
+
+// 	if !bodyA.Static {
+// 		bodyA.Velocity = bodyA.Velocity.Add(impulse.Multiply(invMassA))
+// 	}
+
+// 	if !bodyB.Static {
+// 		bodyB.Velocity = bodyB.Velocity.Subtract(impulse.Multiply(invMassB))
+// 	}
+// }
+
 func resolveImpulse(collision *Collision, bodyA *entities.Body, bodyB *entities.Body) {
 	e := math.Min(bodyA.E, bodyB.E)
-	relativeVelocity := bodyA.Velocity.Subtract(bodyB.Velocity)
-	velDotNormal := relativeVelocity.Dot(collision.Normal)
 
-	invMassA := 1.0 / bodyA.Mass
-	invMassB := 1.0 / bodyB.Mass
+	// r is the distance from the center of mass to the point of collision aprox.
+	ra := collision.End.Subtract(bodyA.Position)
+	rb := collision.Start.Subtract(bodyB.Position)
 
-	invMassSum := invMassA + invMassB
+	// V = v + w X r at the point of contact determined by r
+	Va := bodyA.Velocity.Add(bodyA.AngularVelocityProduct(ra))
+	Vb := bodyB.Velocity.Add(bodyA.AngularVelocityProduct(rb))
 
-	jMag := -(1 + e) * velDotNormal / invMassSum
+	// vrel = Va - Vb
+	normal := collision.Normal
+	vRel := Va.Subtract(Vb)
+	vRelNormal := vRel.Dot(normal)
 
-	impulse := collision.Normal.Multiply(jMag)
+	/*
+	                       -(1 + e)(Vrel n)
+	   Jn =  ---------------------------------------------
+	            1        1     (ra X n)^2     (rb x n)^2
+	         ------- + ----- + ----------- + ------------
+	            Ma       Mb        Ia             Ib
+	*/
+	num := -(1 + e) * vRelNormal
+	linearDen := bodyA.InvMass + bodyB.InvMass
+	AngularDenA := ra.Cross(normal) * ra.Cross(normal) / bodyA.Shape.MomentOfInertia()
+	AngularDenB := rb.Cross(normal) * rb.Cross(normal) / bodyB.Shape.MomentOfInertia()
 
-	if !bodyA.Static {
-		bodyA.Velocity = bodyA.Velocity.Add(impulse.Multiply(invMassA))
-	}
+	J := num / (linearDen + AngularDenA + AngularDenB)
+	Jn := normal.Multiply(J)
 
-	if !bodyB.Static {
-		bodyB.Velocity = bodyB.Velocity.Subtract(impulse.Multiply(invMassB))
+	bodyA.ApplyImpulse(Jn, ra)
+	bodyB.ApplyImpulse(Jn, rb)
+
+	// f := math.Min(bodyA.F, bodyB.F)
+}
+
+func PolygonPolygonCollisionDebugger(collision *Collision, rend renderer.Renderer) {
+	if collision != nil {
+		rend.DrawFilledCircle(int32(collision.Start.X), int32(collision.Start.Y), 2, renderer.RED)
+		rend.DrawFilledCircle(int32(collision.End.X), int32(collision.End.Y), 2, renderer.RED)
+
+		drawEnd := collision.Start.Add(collision.Normal.Multiply(15))
+		rend.DrawLine(collision.Start, drawEnd, renderer.RED)
 	}
 }
