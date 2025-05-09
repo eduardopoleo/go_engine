@@ -155,8 +155,13 @@ func resolvePenetration(collision *Collision, bodyA *entities.Body, bodyB *entit
 	db := collision.Depth / invSum * invMassB
 
 	// Apply to the bodies using the normal to transform the scalar into a vector.
-	bodyA.Position = bodyA.Position.Subtract(collision.Normal.Multiply(da))
-	bodyB.Position = bodyB.Position.Add(collision.Normal.Multiply(db))
+	if !bodyA.Static {
+		bodyA.Position = bodyA.Position.Subtract(collision.Normal.Multiply(da))
+	}
+
+	if !bodyB.Static {
+		bodyB.Position = bodyB.Position.Add(collision.Normal.Multiply(db))
+	}
 }
 
 // func resolveImpulse(collision *Collision, bodyA *entities.Body, bodyB *entities.Body) {
@@ -213,8 +218,13 @@ func resolveImpulse(collision *Collision, bodyA *entities.Body, bodyB *entities.
 	J := num / (linearDen + AngularDenA + AngularDenB)
 	Jn := normal.Multiply(J)
 
-	bodyA.ApplyImpulse(Jn, ra)
-	bodyB.ApplyImpulse(Jn, rb)
+	if !bodyA.Static {
+		bodyA.ApplyImpulse(Jn, ra)
+	}
+
+	if !bodyB.Static {
+		bodyB.ApplyImpulse(Jn, rb)
+	}
 
 	// f := math.Min(bodyA.F, bodyB.F)
 }
