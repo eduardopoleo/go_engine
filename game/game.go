@@ -144,6 +144,7 @@ func (game *Game) Update() {
 }
 
 func (game *Game) Draw() {
+	game.Renderer.ClearScreen()
 
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
