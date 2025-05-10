@@ -196,37 +196,44 @@ func resolveImpulse(collision *Collision, bodyA *entities.Body, bodyB *entities.
 
 	// V = v + w X r at the point of contact determined by r
 	Va := bodyA.Velocity.Add(bodyA.AngularVelocityProduct(ra))
-	Vb := bodyB.Velocity.Add(bodyA.AngularVelocityProduct(rb))
-
+	Vb := bodyB.Velocity.Add(bodyB.AngularVelocityProduct(rb))
 	// vrel = Va - Vb
-	normal := collision.Normal
 	vRel := Va.Subtract(Vb)
-	vRelNormal := vRel.Dot(normal)
+	// Does not depend on the direction
 
-	/*
-	                       -(1 + e)(Vrel n)
-	   Jn =  ---------------------------------------------
-	            1        1     (ra X n)^2     (rb x n)^2
-	         ------- + ----- + ----------- + ------------
-	            Ma       Mb        Ia             Ib
-	*/
-	num := -(1 + e) * vRelNormal
-	linearDen := bodyA.InvMass + bodyB.InvMass
-	AngularDenA := ra.Cross(normal) * ra.Cross(normal) / bodyA.Shape.MomentOfInertia()
-	AngularDenB := rb.Cross(normal) * rb.Cross(normal) / bodyB.Shape.MomentOfInertia()
+	Jn := calculateImpulse(bodyA, bodyB, vRel, ra, rb, collision.Normal, e)
+	Jt := calculateImpulse(bodyA, bodyB, vRel, ra, rb, collision.Normal.Normal(), e)
+	f := math.Min(bodyA.F, bodyB.F)
+	Jt = Jt.Multiply(f)
 
-	J := num / (linearDen + AngularDenA + AngularDenB)
-	Jn := normal.Multiply(J)
+	J := Jn.Add(Jt)
 
 	if !bodyA.Static {
-		bodyA.ApplyImpulse(Jn, ra)
+		bodyA.ApplyImpulse(J, ra)
 	}
 
 	if !bodyB.Static {
-		bodyB.ApplyImpulse(Jn, rb)
+		bodyB.ApplyImpulse(J.Multiply(-1), rb)
 	}
+}
 
-	// f := math.Min(bodyA.F, bodyB.F)
+func calculateImpulse(bodyA *entities.Body, bodyB *entities.Body, vRel vector.Vec2, ra vector.Vec2, rb vector.Vec2, direction vector.Vec2, e float64) vector.Vec2 {
+	/*
+	                       -(1 + e)(Vrel . dir)
+	   Jn =  ---------------------------------------------
+	            1        1     (ra X dir)^2     (rb x dir)^2
+	         ------- + ----- + ----------- + ------------
+	            Ma       Mb        Ia             Ib
+	*/
+	vRelDirection := vRel.Dot(direction)
+
+	num := -(1 + e) * vRelDirection
+	linearDen := bodyA.InvMass + bodyB.InvMass
+	angularDenA := ra.Cross(direction) * ra.Cross(direction) / bodyA.Shape.MomentOfInertia()
+	angularDenB := rb.Cross(direction) * rb.Cross(direction) / bodyB.Shape.MomentOfInertia()
+
+	JMag := num / (linearDen + angularDenA + angularDenB)
+	return direction.Multiply(JMag)
 }
 
 func PolygonPolygonCollisionDebugger(collision *Collision, rend renderer.Renderer) {

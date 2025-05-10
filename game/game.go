@@ -29,7 +29,6 @@ func NewGame(name string, width int32, height int32) Game {
 	bottom := entities.NewBoxBody(
 		renderer.WHITE, float64(width-20), 50, 2, vector.Vec2{X: float64(width / 2), Y: float64(height - 20)}, 0, true,
 	)
-
 	left := entities.NewBoxBody(
 		renderer.WHITE, 50, float64(height-20), 2, vector.Vec2{X: 20, Y: float64(height / 2)}, 0, true,
 	)
@@ -88,6 +87,7 @@ func (game *Game) Input() {
 			newBox := entities.NewBoxBody(
 				renderer.WHITE, 50, 50, 2, vector.Vec2{X: float64(x), Y: float64(y)}, 0, false,
 			)
+			newBox.F = 0.7
 			game.Bodies = append(game.Bodies, newBox)
 		}
 	}

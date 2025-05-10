@@ -66,6 +66,8 @@ func NewBoxBody(color uint32, width float64, height float64, mass float64, posit
 		Shape:    newBoxShape,
 		Rotation: rotation,
 		Static:   static,
+		E:        0.2,
+		F:        1,
 	}
 	box.Shape = newBoxShape
 	return box
@@ -77,11 +79,11 @@ func (body *Body) ApplyImpulse(J vector.Vec2, r vector.Vec2) {
 }
 
 func (body *Body) applyLinearImpulse(J vector.Vec2) {
-	body.Velocity = body.Velocity.Subtract(J.Multiply(body.InvMass))
+	body.Velocity = body.Velocity.Add(J.Multiply(body.InvMass))
 }
 
 func (body *Body) applyAngularImpulse(J vector.Vec2, r vector.Vec2) {
-	body.AngularVelocity = body.AngularVelocity - r.Cross(J)/body.Shape.MomentOfInertia()
+	body.AngularVelocity = body.AngularVelocity + r.Cross(J)/body.Shape.MomentOfInertia()
 }
 
 func (body *Body) IntegrateAngular(dt float64) {
