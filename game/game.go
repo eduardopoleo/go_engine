@@ -87,6 +87,7 @@ func (game *Game) Input() {
 			newBox := entities.NewBoxBody(
 				renderer.WHITE, 50, 50, 2, vector.Vec2{X: float64(x), Y: float64(y)}, 0, false,
 			)
+			newBox.E = 1
 			newBox.F = 0.7
 			game.Bodies = append(game.Bodies, newBox)
 		}

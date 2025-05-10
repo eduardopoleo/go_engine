@@ -66,7 +66,7 @@ func NewBoxBody(color uint32, width float64, height float64, mass float64, posit
 		Shape:    newBoxShape,
 		Rotation: rotation,
 		Static:   static,
-		E:        0.2,
+		E:        1,
 		F:        1,
 	}
 	box.Shape = newBoxShape
