@@ -4,7 +4,6 @@ import (
 	"engine/collision"
 	"engine/constants"
 	"engine/entities"
-	"engine/physics"
 	"engine/renderer"
 	"engine/vector"
 
@@ -40,13 +39,15 @@ func NewGame(name string, width int32, height int32) Game {
 	bigBox := entities.NewBoxBody(
 		renderer.WHITE, 150, 150, 2, vector.Vec2{X: float64(width / 2), Y: float64(height / 2)}, 0, true,
 	)
-
 	bigBox.Rotation = 1.4
+
+	circle := entities.NewCircle(vector.Vec2{X: 400, Y: 600}, 40, renderer.WHITE, 2.0)
 
 	game.Bodies = append(game.Bodies, bottom)
 	game.Bodies = append(game.Bodies, left)
 	game.Bodies = append(game.Bodies, right)
 	game.Bodies = append(game.Bodies, bigBox)
+	game.Bodies = append(game.Bodies, circle)
 
 	return game
 }
@@ -81,15 +82,11 @@ func (game *Game) Input() {
 			} else if event.Key() == renderer.DOWN_ARROW {
 				game.PushForce.Y = 0
 			}
-		case renderer.MOUSE_UP_EVENT:
+		case renderer.MOUSEMOTION:
 			x, y, _ := sdl.GetMouseState()
-
-			newBox := entities.NewBoxBody(
-				renderer.WHITE, 50, 50, 2, vector.Vec2{X: float64(x), Y: float64(y)}, 0, false,
-			)
-			newBox.E = 1
-			newBox.F = 0.7
-			game.Bodies = append(game.Bodies, newBox)
+			circle := &game.Bodies[4]
+			circle.Position.X = float64(x)
+			circle.Position.Y = float64(y)
 		}
 	}
 }
@@ -114,14 +111,12 @@ func (game *Game) Update() {
 
 	game.TimeToPreviousFrame = sdl.GetTicks64()
 
-	windowWidth, windowHeight := game.Renderer.GetWindowSize()
-
 	// Update other bodies
 
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
-		weight := physics.NewWeightForce(body.Mass)
-		body.SumForces = body.SumForces.Add(weight)
+		// weight := physics.NewWeightForce(body.Mass)
+		// body.SumForces = body.SumForces.Add(weight)
 		body.SumForces = body.SumForces.Add(game.PushForce)
 	}
 
@@ -140,7 +135,6 @@ func (game *Game) Update() {
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
 		body.Update(deltaTime)
-		bounce(body, game, windowWidth, windowHeight, deltaTime)
 	}
 }
 
@@ -149,28 +143,8 @@ func (game *Game) Draw() {
 
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
-		// fmt.Printf("coordinates for body i, %d X %f, Y %f\n", i, body.Position.X, body.Position.Y)
 		body.Shape.Draw(body.Position.X, body.Position.Y, body.Rotation, &game.Renderer)
 	}
 
 	game.Renderer.Render()
-}
-
-func bounce(body *entities.Body, game *Game, windowWidth float64, windowHeight float64, deltaTime float64) {
-	padding := 0.1
-	if circle, ok := body.Shape.(*entities.Circle); ok {
-		if (body.Position.X - float64(circle.Radius)) <= 0 {
-			body.Velocity.X = -constants.RESTITUTION_COEFFICIENT * body.Velocity.X
-			body.Position.X = float64(circle.Radius) + padding
-		} else if (body.Position.X + float64(circle.Radius)) >= windowWidth {
-			body.Velocity.X = -constants.RESTITUTION_COEFFICIENT * body.Velocity.X
-			body.Position.X = windowWidth - float64(circle.Radius) - padding
-		} else if (body.Position.Y - float64(circle.Radius)) <= 0 {
-			body.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * body.Velocity.Y
-			body.Position.Y = float64(circle.Radius) + padding
-		} else if (body.Position.Y + float64(circle.Radius)) >= windowHeight {
-			body.Velocity.Y = -constants.RESTITUTION_COEFFICIENT * body.Velocity.Y
-			body.Position.Y = windowHeight - float64(circle.Radius) - padding
-		}
-	}
 }

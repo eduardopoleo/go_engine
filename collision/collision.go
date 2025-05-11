@@ -33,15 +33,27 @@ func ResolveCollision(bodyA *entities.Body, bodyB *entities.Body) {
 	}
 
 	if isPolygonA && isPolygonB {
-		collision = CalculatePolygonPolygonCollision(bodyA, bodyB, polygonA, polygonB)
+		collision = calculatePolygonPolygonCollision(bodyA, bodyB, polygonA, polygonB)
+	}
+
+	if isPolygonA && isCircleB {
+		collision = calculatePolygonCircleCollision(bodyA, bodyB, polygonA, circleB)
+	}
+
+	if isCircleA && isPolygonB {
+		collision = calculatePolygonCircleCollision(bodyB, bodyA, polygonB, circleA)
 	}
 
 	if collision == nil {
 		return
 	}
 
-	resolvePenetration(collision, bodyA, bodyB)
-	resolveImpulse(collision, bodyA, bodyB)
+	// resolvePenetration(collision, bodyA, bodyB)
+	// resolveImpulse(collision, bodyA, bodyB)
+}
+
+func calculatePolygonCircleCollision(bodyA *entities.Body, bodyB *entities.Body, polygonA *entities.Polygon, circleB *entities.Circle) *Collision {
+	return &Collision{}
 }
 
 func calculateCirCleCirCleCollission(bodyA *entities.Body, bodyB *entities.Body, circleA *entities.Circle, circleB *entities.Circle) *Collision {
@@ -68,7 +80,7 @@ func calculateCirCleCirCleCollission(bodyA *entities.Body, bodyB *entities.Body,
 	}
 }
 
-func CalculatePolygonPolygonCollision(bodyA *entities.Body, bodyB *entities.Body, polygonA *entities.Polygon, polygonB *entities.Polygon) *Collision {
+func calculatePolygonPolygonCollision(bodyA *entities.Body, bodyB *entities.Body, polygonA *entities.Polygon, polygonB *entities.Polygon) *Collision {
 	penetrationAB, edgeA, vertexB := calculatePenetration(polygonA, polygonB)
 	penetrationBA, edgeB, vertexA := calculatePenetration(polygonB, polygonA)
 

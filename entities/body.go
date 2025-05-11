@@ -6,6 +6,7 @@ import (
 
 type Body struct {
 	Static bool
+	Name   string
 
 	// Linear properties
 	Mass         float64
@@ -57,6 +58,22 @@ func (body *Body) AngularVelocityProduct(r vector.Vec2) vector.Vec2 {
 	return vector.Vec2{X: -body.AngularVelocity * r.Y, Y: body.AngularVelocity * r.X}
 }
 
+func NewCircle(position vector.Vec2, radius int32, color uint32, mass float64) Body {
+	circleShape := CircleShape(radius, color)
+	circle := Body{
+		Position: position,
+		Mass:     mass,
+		InvMass:  1 / mass,
+		Shape:    circleShape,
+		Rotation: 0,
+		Static:   false,
+		E:        1,
+		F:        1,
+		Name:     "Circle",
+	}
+	return circle
+}
+
 func NewBoxBody(color uint32, width float64, height float64, mass float64, position vector.Vec2, rotation float64, static bool) Body {
 	newBoxShape := NewBox(color, width, height)
 	box := Body{
@@ -69,7 +86,6 @@ func NewBoxBody(color uint32, width float64, height float64, mass float64, posit
 		E:        1,
 		F:        1,
 	}
-	box.Shape = newBoxShape
 	return box
 }
 

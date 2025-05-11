@@ -27,7 +27,7 @@ type Circle struct {
 	Radius int32
 }
 
-func NewCircle(radius int32, color uint32) *Circle {
+func CircleShape(radius int32, color uint32) *Circle {
 	return &Circle{
 		Color:  color,
 		Radius: radius,
@@ -40,6 +40,7 @@ func (circle *Circle) MomentOfInertia() float64 {
 }
 
 func (circle *Circle) Draw(x float64, y float64, rotation float64, renderer *renderer.Renderer) {
+	// fmt.Printf("drawing x %f, y %f\n", x, y)
 	renderer.DrawCircle(
 		int32(x),
 		int32(y),
