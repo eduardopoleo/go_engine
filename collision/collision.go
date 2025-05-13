@@ -16,9 +16,9 @@ type Collision struct {
 	Depth  float64
 }
 
-func ResolveCollision(bodyA *entities.Body, bodyB *entities.Body) {
+func Resolve(bodyA *entities.Body, bodyB *entities.Body) *Collision {
 	if bodyA.Static && bodyB.Static {
-		return
+		return nil
 	}
 
 	circleA, isCircleA := bodyA.Shape.(*entities.Circle)
@@ -45,14 +45,41 @@ func ResolveCollision(bodyA *entities.Body, bodyB *entities.Body) {
 	}
 
 	if collision == nil {
-		return
+		return nil
 	}
 
 	// resolvePenetration(collision, bodyA, bodyB)
 	// resolveImpulse(collision, bodyA, bodyB)
+	return collision
 }
 
-func calculatePolygonCircleCollision(bodyA *entities.Body, bodyB *entities.Body, polygonA *entities.Polygon, circleB *entities.Circle) *Collision {
+func calculatePolygonCircleCollision(polygon *entities.Body, circle *entities.Body, polygonShape *entities.Polygon, circleShape *entities.Circle) *Collision {
+
+	closestDistance := math.Inf(-1)
+	// closestVertex := -1
+	var projections []float64
+
+	for idx, vertex := range polygonShape.WorldVertices {
+		edge := polygonShape.EdgeAt(idx)
+		normal := edge.Normal()
+		d := circle.Position.Subtract(vertex)
+		proj := d.ProjOnTo(normal)
+
+		projections = append(projections, proj)
+
+		if proj > closestDistance {
+			closestDistance = proj
+			// closestVertex = idx
+		}
+	}
+
+	// for i, proj := range projections {
+	// 	fmt.Printf("i: %d, proj: %f\n", i, proj)
+	// }
+
+	if closestDistance < 0 {
+		return nil
+	}
 	return &Collision{}
 }
 

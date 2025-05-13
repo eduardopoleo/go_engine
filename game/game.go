@@ -12,6 +12,7 @@ import (
 
 type Game struct {
 	Running             bool
+	DebugMode           bool
 	Renderer            renderer.Renderer
 	Bodies              []entities.Body
 	PushForce           vector.Vec2
@@ -25,27 +26,28 @@ func NewGame(name string, width int32, height int32) Game {
 	game.PushForce = vector.Vec2{}
 	game.TimeToPreviousFrame = sdl.GetTicks64()
 
-	bottom := entities.NewBoxBody(
-		renderer.WHITE, float64(width-20), 50, 2, vector.Vec2{X: float64(width / 2), Y: float64(height - 20)}, 0, true,
-	)
-	left := entities.NewBoxBody(
-		renderer.WHITE, 50, float64(height-20), 2, vector.Vec2{X: 20, Y: float64(height / 2)}, 0, true,
-	)
+	// bottom := entities.NewBoxBody(
+	// 	renderer.WHITE, float64(width-20), 50, 2, vector.Vec2{X: float64(width / 2), Y: float64(height - 20)}, 0, true,
+	// )
+	// left := entities.NewBoxBody(
+	// 	renderer.WHITE, 50, float64(height-20), 2, vector.Vec2{X: 20, Y: float64(height / 2)}, 0, true,
+	// )
 
-	right := entities.NewBoxBody(
-		renderer.WHITE, 50, float64(height-20), 2, vector.Vec2{X: float64(width - 20), Y: float64(height / 2)}, 0, true,
-	)
+	// right := entities.NewBoxBody(
+	// 	renderer.WHITE, 50, float64(height-20), 2, vector.Vec2{X: float64(width - 20), Y: float64(height / 2)}, 0, true,
+	// )
 
 	bigBox := entities.NewBoxBody(
 		renderer.WHITE, 150, 150, 2, vector.Vec2{X: float64(width / 2), Y: float64(height / 2)}, 0, true,
 	)
+	bigBox.Name = "bigBox"
 	bigBox.Rotation = 1.4
 
 	circle := entities.NewCircle(vector.Vec2{X: 400, Y: 600}, 40, renderer.WHITE, 2.0)
 
-	game.Bodies = append(game.Bodies, bottom)
-	game.Bodies = append(game.Bodies, left)
-	game.Bodies = append(game.Bodies, right)
+	// game.Bodies = append(game.Bodies, bottom)
+	// game.Bodies = append(game.Bodies, left)
+	// game.Bodies = append(game.Bodies, right)
 	game.Bodies = append(game.Bodies, bigBox)
 	game.Bodies = append(game.Bodies, circle)
 
@@ -81,10 +83,12 @@ func (game *Game) Input() {
 				game.PushForce.Y = 0
 			} else if event.Key() == renderer.DOWN_ARROW {
 				game.PushForce.Y = 0
+			} else if event.Key() == renderer.D {
+				game.DebugMode = !game.DebugMode
 			}
 		case renderer.MOUSEMOTION:
 			x, y, _ := sdl.GetMouseState()
-			circle := &game.Bodies[4]
+			circle := &game.Bodies[1]
 			circle.Position.X = float64(x)
 			circle.Position.Y = float64(y)
 		}
@@ -125,13 +129,16 @@ func (game *Game) Update() {
 		for b := a + 1; b < len(game.Bodies); b++ {
 			bodyA := &game.Bodies[a]
 			bodyB := &game.Bodies[b]
-			collision.ResolveCollision(bodyA, bodyB)
+			col := collision.Resolve(bodyA, bodyB)
+
+			if game.DebugMode && col != nil {
+				bodyA.Shape.MarkDebug()
+				bodyB.Shape.MarkDebug()
+			}
 		}
 	}
 
 	// IntegrateLinear last all bodies not in between
-	// use float64
-	// use damping factor to increase stability
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
 		body.Update(deltaTime)
@@ -143,7 +150,11 @@ func (game *Game) Draw() {
 
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
-		body.Shape.Draw(body.Position.X, body.Position.Y, body.Rotation, &game.Renderer)
+		body.Shape.Draw(body, &game.Renderer)
+
+		if game.DebugMode {
+			body.Shape.UnMarkDebug()
+		}
 	}
 
 	game.Renderer.Render()

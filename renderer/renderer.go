@@ -48,6 +48,7 @@ func (renderer *Renderer) Destroy() {
 const (
 	WHITE uint32 = 0xFFFFFFFF
 	RED   uint32 = 0xFF0000FF
+	DEBUG uint32 = 0xFF00FFFF
 )
 
 // Events type
@@ -68,6 +69,7 @@ const (
 	UP_ARROW    string = "UP_ARROW"
 	DOWN_ARROW  string = "DOWN_ARROW"
 	BUTTON_LEFT string = "BUTTON_LEFT"
+	D           string = "D"
 )
 
 type Event struct {
@@ -116,6 +118,8 @@ func (event *Event) Key() string {
 			return DOWN_ARROW
 		case sdl.BUTTON_LEFT:
 			return BUTTON_LEFT
+		case sdl.K_d:
+			return D
 		}
 	} else if mouseEvent, ok := event.OriginalEvent.(*sdl.MouseButtonEvent); ok {
 		switch mouseEvent.Button {

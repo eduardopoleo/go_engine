@@ -27,6 +27,11 @@ func (a *Vec2) Dot(b Vec2) float64 {
 	return a.X*b.X + a.Y*b.Y
 }
 
+// Alias to remember it easier
+func (a *Vec2) ProjOnTo(b Vec2) float64 {
+	return a.Dot(b)
+}
+
 /*
 a = [Ax, Ay]
 b = [Bx, By]
