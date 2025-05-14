@@ -4,6 +4,7 @@ import (
 	"engine/collision"
 	"engine/constants"
 	"engine/entities"
+	"engine/physics"
 	"engine/renderer"
 	"engine/vector"
 
@@ -27,16 +28,16 @@ func NewGame(name string, width int32, height int32) Game {
 	game.PushForce = vector.Vec2{}
 	game.TimeToPreviousFrame = sdl.GetTicks64()
 
-	// bottom := entities.NewBoxBody(
-	// 	renderer.WHITE, float64(width-20), 50, 2, vector.Vec2{X: float64(width / 2), Y: float64(height - 20)}, 0, true,
-	// )
-	// left := entities.NewBoxBody(
-	// 	renderer.WHITE, 50, float64(height-20), 2, vector.Vec2{X: 20, Y: float64(height / 2)}, 0, true,
-	// )
+	bottom := entities.NewBoxBody(
+		renderer.WHITE, float64(width-20), 50, 2, vector.Vec2{X: float64(width / 2), Y: float64(height - 20)}, 0, true,
+	)
+	left := entities.NewBoxBody(
+		renderer.WHITE, 50, float64(height-20), 2, vector.Vec2{X: 20, Y: float64(height / 2)}, 0, true,
+	)
 
-	// right := entities.NewBoxBody(
-	// 	renderer.WHITE, 50, float64(height-20), 2, vector.Vec2{X: float64(width - 20), Y: float64(height / 2)}, 0, true,
-	// )
+	right := entities.NewBoxBody(
+		renderer.WHITE, 50, float64(height-20), 2, vector.Vec2{X: float64(width - 20), Y: float64(height / 2)}, 0, true,
+	)
 
 	bigBox := entities.NewBoxBody(
 		renderer.WHITE, 150, 150, 2, vector.Vec2{X: float64(width / 2), Y: float64(height / 2)}, 0, true,
@@ -44,13 +45,10 @@ func NewGame(name string, width int32, height int32) Game {
 	bigBox.Name = "bigBox"
 	bigBox.Rotation = 1.4
 
-	circle := entities.NewCircle(vector.Vec2{X: 400, Y: 600}, 40, renderer.WHITE, 2.0)
-
-	// game.Bodies = append(game.Bodies, bottom)
-	// game.Bodies = append(game.Bodies, left)
-	// game.Bodies = append(game.Bodies, right)
+	game.Bodies = append(game.Bodies, bottom)
+	game.Bodies = append(game.Bodies, left)
+	game.Bodies = append(game.Bodies, right)
 	game.Bodies = append(game.Bodies, bigBox)
-	game.Bodies = append(game.Bodies, circle)
 
 	return game
 }
@@ -87,11 +85,15 @@ func (game *Game) Input() {
 			} else if event.Key() == renderer.D {
 				game.DebugMode = !game.DebugMode
 			}
-		case renderer.MOUSEMOTION:
+		case renderer.MOUSE_UP_EVENT:
 			x, y, _ := sdl.GetMouseState()
-			circle := &game.Bodies[1]
-			circle.Position.X = float64(x)
-			circle.Position.Y = float64(y)
+			circle := entities.NewCircle(
+				vector.Vec2{X: float64(x), Y: float64(y)},
+				25,
+				renderer.WHITE,
+				2,
+			)
+			game.Bodies = append(game.Bodies, circle)
 		}
 	}
 }
@@ -120,9 +122,9 @@ func (game *Game) Update() {
 
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
-		// weight := physics.NewWeightForce(body.Mass)
-		// body.SumForces = body.SumForces.Add(weight)
-		body.SumForces = body.SumForces.Add(game.PushForce)
+		weight := physics.NewWeightForce(body.Mass)
+		body.SumForces = body.SumForces.Add(weight)
+		// body.SumForces = body.SumForces.Add(game.PushForce)
 	}
 
 	// Check and resolve collisions for all bodies

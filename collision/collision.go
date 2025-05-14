@@ -48,8 +48,8 @@ func Resolve(bodyA *entities.Body, bodyB *entities.Body) *Collision {
 		return nil
 	}
 
-	// resolvePenetration(collision, bodyA, bodyB)
-	// resolveImpulse(collision, bodyA, bodyB)
+	resolvePenetration(collision, bodyA, bodyB)
+	resolveImpulse(collision, bodyA, bodyB)
 	return collision
 }
 
