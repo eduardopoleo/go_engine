@@ -49,6 +49,7 @@ const (
 	WHITE uint32 = 0xFFFFFFFF
 	RED   uint32 = 0xFF0000FF
 	DEBUG uint32 = 0xFF00FFFF
+	GREEN uint32 = 0x00FF00FF
 )
 
 // Events type

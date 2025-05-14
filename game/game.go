@@ -17,6 +17,7 @@ type Game struct {
 	Bodies              []entities.Body
 	PushForce           vector.Vec2
 	TimeToPreviousFrame uint64
+	Collisions          []*collision.Collision
 }
 
 func NewGame(name string, width int32, height int32) Game {
@@ -132,6 +133,7 @@ func (game *Game) Update() {
 			col := collision.Resolve(bodyA, bodyB)
 
 			if game.DebugMode && col != nil {
+				game.Collisions = append(game.Collisions, col)
 				bodyA.Shape.MarkDebug()
 				bodyB.Shape.MarkDebug()
 			}
@@ -147,6 +149,14 @@ func (game *Game) Update() {
 
 func (game *Game) Draw() {
 	game.Renderer.ClearScreen()
+
+	if game.DebugMode {
+		for _, col := range game.Collisions {
+			collision.PolygonPolygonCollisionDebugger(col, game.Renderer)
+		}
+
+		game.Collisions = nil
+	}
 
 	for i := range game.Bodies {
 		body := &game.Bodies[i]

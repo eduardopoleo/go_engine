@@ -56,7 +56,8 @@ func Resolve(bodyA *entities.Body, bodyB *entities.Body) *Collision {
 func calculatePolygonCircleCollision(polygon *entities.Body, circle *entities.Body, polygonShape *entities.Polygon, circleShape *entities.Circle) *Collision {
 
 	closestDistance := math.Inf(-1)
-	// closestVertex := -1
+	closestVertexIdx := -1
+	var closestVertex vector.Vec2
 	var projections []float64
 
 	for idx, vertex := range polygonShape.WorldVertices {
@@ -69,18 +70,63 @@ func calculatePolygonCircleCollision(polygon *entities.Body, circle *entities.Bo
 
 		if proj > closestDistance {
 			closestDistance = proj
-			// closestVertex = idx
+			closestVertexIdx = idx
+			closestVertex = vertex
 		}
 	}
 
-	// for i, proj := range projections {
-	// 	fmt.Printf("i: %d, proj: %f\n", i, proj)
-	// }
-
-	if closestDistance < 0 {
+	if closestDistance > float64(circleShape.Radius) {
 		return nil
 	}
-	return &Collision{}
+
+	prevIdex := (closestVertexIdx - 1 + len(polygonShape.WorldVertices)) % len(polygonShape.WorldVertices)
+	nextIdx := (closestVertexIdx + 1) % len(polygonShape.WorldVertices)
+
+	var collision Collision
+	var normal vector.Vec2
+	var start vector.Vec2
+	var end vector.Vec2
+	var depth float64
+
+	if closestDistance < 0 {
+		normal = polygonShape.EdgeAt(closestVertexIdx)
+		normal = normal.Normal()
+		start = circle.Position.Subtract(normal.Multiply(float64(circleShape.Radius)))
+		depth = float64(circleShape.Radius) - closestDistance
+		end = start.Add(normal.Multiply(depth))
+	} else if projections[prevIdex] > 0 {
+		normal = circle.Position.Subtract(closestVertex)
+		normal = normal.Unit()
+		start = circle.Position.Subtract(normal.Multiply(float64(circleShape.Radius)))
+		end = closestVertex
+		depthVec := start.Subtract(end)
+		depth = depthVec.Magnitude()
+	} else if projections[nextIdx] > 0 {
+		nextVertex := polygonShape.WorldVertices[nextIdx]
+		normal = circle.Position.Subtract(nextVertex)
+		normal = normal.Unit()
+		start = circle.Position.Subtract(normal.Multiply(float64(circleShape.Radius)))
+		end = nextVertex
+		depthVec := start.Subtract(end)
+		depth = depthVec.Magnitude()
+	} else {
+		normal = polygonShape.EdgeAt(closestVertexIdx)
+		normal = normal.Normal()
+		start = circle.Position.Subtract(normal.Multiply(float64(circleShape.Radius)))
+		depth = float64(circleShape.Radius) - closestDistance
+		end = start.Add(normal.Multiply(depth))
+	}
+
+	collision = Collision{
+		BodyA:  *polygon,
+		BodyB:  *circle,
+		Normal: normal,
+		Start:  start,
+		End:    end,
+		Depth:  depth,
+	}
+
+	return &collision
 }
 
 func calculateCirCleCirCleCollission(bodyA *entities.Body, bodyB *entities.Body, circleA *entities.Circle, circleB *entities.Circle) *Collision {
@@ -277,7 +323,7 @@ func calculateImpulse(bodyA *entities.Body, bodyB *entities.Body, vRel vector.Ve
 
 func PolygonPolygonCollisionDebugger(collision *Collision, rend renderer.Renderer) {
 	if collision != nil {
-		rend.DrawFilledCircle(int32(collision.Start.X), int32(collision.Start.Y), 2, renderer.RED)
+		rend.DrawFilledCircle(int32(collision.Start.X), int32(collision.Start.Y), 2, renderer.GREEN)
 		rend.DrawFilledCircle(int32(collision.End.X), int32(collision.End.Y), 2, renderer.RED)
 
 		drawEnd := collision.Start.Add(collision.Normal.Multiply(15))
