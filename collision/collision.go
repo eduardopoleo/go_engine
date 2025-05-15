@@ -89,8 +89,8 @@ func calculatePolygonCircleCollision(polygon *entities.Body, circle *entities.Bo
 	var depth float64
 
 	if closestDistance < 0 {
-		normal = polygonShape.EdgeAt(closestVertexIdx)
-		normal = normal.Normal()
+		closestEdge := polygonShape.EdgeAt(closestVertexIdx)
+		normal = closestEdge.Normal()
 		start = circle.Position.Subtract(normal.Multiply(float64(circleShape.Radius)))
 		depth = float64(circleShape.Radius) - closestDistance
 		end = start.Add(normal.Multiply(depth))
