@@ -1,13 +1,10 @@
 package game
 
 import (
-	"engine/collision"
 	"engine/constants"
 	"engine/entities"
-	"engine/physics"
 	"engine/renderer"
 	"engine/vector"
-	"fmt"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -16,17 +13,14 @@ type Game struct {
 	Running             bool
 	DebugMode           bool
 	Renderer            renderer.Renderer
-	Bodies              []entities.Body
-	PushForce           vector.Vec2
 	TimeToPreviousFrame uint64
-	Collisions          []*collision.Collision
+	World               World
 }
 
 func NewGame(name string, width int32, height int32) Game {
 	game := Game{Running: true}
 	rendr := renderer.NewRenderer(name, width, height)
 	game.Renderer = rendr
-	game.PushForce = vector.Vec2{}
 	game.TimeToPreviousFrame = sdl.GetTicks64()
 
 	bottom := entities.NewBoxBody(
@@ -47,10 +41,10 @@ func NewGame(name string, width int32, height int32) Game {
 	bigBox.Rotation = 1.4
 	bigBox.AttachTexture("./assets/crate.png", &game.Renderer)
 
-	game.Bodies = append(game.Bodies, bottom)
-	game.Bodies = append(game.Bodies, left)
-	game.Bodies = append(game.Bodies, right)
-	game.Bodies = append(game.Bodies, bigBox)
+	game.World.AddBody(&bottom)
+	game.World.AddBody(&left)
+	game.World.AddBody(&right)
+	game.World.AddBody(&bigBox)
 
 	return game
 }
@@ -65,26 +59,6 @@ func (game *Game) Input() {
 			if event.Key() == renderer.ESCAPE {
 				game.Running = false
 				game.Cleanup()
-			} else if event.Key() == renderer.LEFT_ARROW {
-				game.PushForce.X = float64(-50 * constants.PIXEL_PER_METER)
-			} else if event.Key() == renderer.RIGHT_ARROW {
-				game.PushForce.X = float64(50 * constants.PIXEL_PER_METER)
-			} else if event.Key() == renderer.UP_ARROW {
-				game.PushForce.Y = float64(-50 * constants.PIXEL_PER_METER)
-			} else if event.Key() == renderer.DOWN_ARROW {
-				game.PushForce.Y = float64(50 * constants.PIXEL_PER_METER)
-			}
-		case renderer.KEYUP:
-			if event.Key() == renderer.LEFT_ARROW {
-				game.PushForce.X = 0
-			} else if event.Key() == renderer.RIGHT_ARROW {
-				game.PushForce.X = 0
-			} else if event.Key() == renderer.UP_ARROW {
-				game.PushForce.Y = 0
-			} else if event.Key() == renderer.DOWN_ARROW {
-				game.PushForce.Y = 0
-			} else if event.Key() == renderer.D {
-				game.DebugMode = !game.DebugMode
 			}
 		case renderer.MOUSE_BUTTON_LEFT_UP:
 			x, y, _ := sdl.GetMouseState()
@@ -95,7 +69,7 @@ func (game *Game) Input() {
 				2,
 			)
 			circle.AttachTexture("./assets/bowlingball.png", &game.Renderer)
-			game.Bodies = append(game.Bodies, circle)
+			game.World.AddBody(&circle)
 		case renderer.MOUSE_BUTTON_RIGHT_UP:
 			x, y, _ := sdl.GetMouseState()
 			polygonShape := entities.NewBox(renderer.WHITE, 100, 100)
@@ -111,8 +85,7 @@ func (game *Game) Input() {
 				Name:     "Polygon",
 			}
 			polygon.AttachTexture("./assets/crate.png", &game.Renderer)
-
-			game.Bodies = append(game.Bodies, polygon)
+			game.World.AddBody(&polygon)
 		}
 	}
 }
@@ -137,56 +110,15 @@ func (game *Game) Update() {
 
 	game.TimeToPreviousFrame = sdl.GetTicks64()
 
-	// Update other bodies
-
-	for i := range game.Bodies {
-		body := &game.Bodies[i]
-		weight := physics.NewWeightForce(body.Mass)
-		body.SumForces = body.SumForces.Add(weight)
-		// body.SumForces = body.SumForces.Add(game.PushForce)
-	}
-
-	// Check and resolve collisions for all bodies
-	for a := 0; a < len(game.Bodies)-1; a++ {
-		for b := a + 1; b < len(game.Bodies); b++ {
-			bodyA := &game.Bodies[a]
-			bodyB := &game.Bodies[b]
-			col := collision.Resolve(bodyA, bodyB)
-
-			if game.DebugMode && col != nil {
-				game.Collisions = append(game.Collisions, col)
-				bodyA.Shape.MarkDebug()
-				bodyB.Shape.MarkDebug()
-			}
-		}
-	}
-
-	// IntegrateLinear last all bodies not in between
-	for i := range game.Bodies {
-		body := &game.Bodies[i]
-		body.Update(deltaTime)
-		if polygon, ok := body.Shape.(*entities.Polygon); ok {
-			if len(polygon.WorldVertices) > 4 {
-				fmt.Printf("X: %f, Y: %f\n", body.Position.X, body.Position.Y)
-			}
-		}
-	}
+	game.World.Update(deltaTime)
+	game.World.HandleCollisions()
 }
 
 func (game *Game) Draw() {
 	game.Renderer.ClearScreen()
 
-	if game.DebugMode {
-		for _, col := range game.Collisions {
-			// TODO: change the name to collision debugger
-			collision.PolygonPolygonCollisionDebugger(col, game.Renderer)
-		}
-
-		game.Collisions = nil
-	}
-
-	for i := range game.Bodies {
-		body := &game.Bodies[i]
+	for i := range game.World.Bodies {
+		body := game.World.Bodies[i]
 		if body.Texture == nil {
 			body.Shape.Draw(body, &game.Renderer)
 
@@ -209,7 +141,7 @@ func (game *Game) Draw() {
 }
 
 func (game *Game) Cleanup() {
-	for _, body := range game.Bodies {
+	for _, body := range game.World.Bodies {
 		body.Destroy()
 	}
 	game.Renderer.Destroy()
