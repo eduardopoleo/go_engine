@@ -2,6 +2,7 @@ package entities
 
 import (
 	"engine/renderer"
+	"engine/vector"
 )
 
 type Shape interface {
@@ -11,4 +12,5 @@ type Shape interface {
 	UnMarkDebug()
 	GetHeight() float64
 	GetWidth() float64
+	UpdateVertices(position vector.Vec2, rotation float64)
 }

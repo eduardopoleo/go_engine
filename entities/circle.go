@@ -2,6 +2,7 @@ package entities
 
 import (
 	"engine/renderer"
+	"engine/vector"
 )
 
 type Circle struct {
@@ -37,6 +38,10 @@ func (circle *Circle) Draw(body *Body, renderer *renderer.Renderer) {
 		body.Rotation,
 		circle.Color,
 	)
+}
+
+func (circle *Circle) UpdateVertices(position vector.Vec2, rotation float64) {
+	return // no-op
 }
 
 func (circle *Circle) MarkDebug() {

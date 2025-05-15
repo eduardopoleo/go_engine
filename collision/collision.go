@@ -242,10 +242,12 @@ func resolvePenetration(collision *Collision, bodyA *entities.Body, bodyB *entit
 	// Apply to the bodies using the normal to transform the scalar into a vector.
 	if !bodyA.Static {
 		bodyA.Position = bodyA.Position.Subtract(collision.Normal.Multiply(da))
+		bodyA.Shape.UpdateVertices(bodyA.Position, bodyA.Rotation)
 	}
 
 	if !bodyB.Static {
 		bodyB.Position = bodyB.Position.Add(collision.Normal.Multiply(db))
+		bodyB.Shape.UpdateVertices(bodyB.Position, bodyB.Rotation)
 	}
 }
 

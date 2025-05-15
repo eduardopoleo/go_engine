@@ -74,6 +74,13 @@ func (polygon *Polygon) Draw(body *Body, rendr *renderer.Renderer) {
 	rendr.DrawCircle(int32(body.Position.X), int32(body.Position.Y), 1, 0, polygon.Color)
 }
 
+func (polygon *Polygon) UpdateVertices(position vector.Vec2, rotation float64) {
+	for i := 0; i < len(polygon.WorldVertices); i++ {
+		polygon.WorldVertices[i] = polygon.LocalVertices[i].Rotate(rotation)
+		polygon.WorldVertices[i] = polygon.WorldVertices[i].Add(position)
+	}
+}
+
 func (polygon *Polygon) MarkDebug() {
 	polygon.Color = renderer.DEBUG
 }
