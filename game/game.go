@@ -7,6 +7,7 @@ import (
 	"engine/physics"
 	"engine/renderer"
 	"engine/vector"
+	"fmt"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -85,7 +86,7 @@ func (game *Game) Input() {
 			} else if event.Key() == renderer.D {
 				game.DebugMode = !game.DebugMode
 			}
-		case renderer.MOUSE_UP_EVENT:
+		case renderer.MOUSE_BUTTON_LEFT_UP:
 			x, y, _ := sdl.GetMouseState()
 			circle := entities.NewCircle(
 				vector.Vec2{X: float64(x), Y: float64(y)},
@@ -94,6 +95,45 @@ func (game *Game) Input() {
 				2,
 			)
 			game.Bodies = append(game.Bodies, circle)
+		case renderer.MOUSE_BUTTON_RIGHT_UP:
+			x, y, _ := sdl.GetMouseState()
+
+			worldVertices := []vector.Vec2{
+				{X: 0, Y: 60},
+				{X: -20, Y: 40},
+				{X: -20, Y: -40},
+				{X: 0, Y: -60},
+				{X: 20, Y: -40},
+				{X: 20, Y: 40},
+			}
+			localVertices := []vector.Vec2{
+				{X: 0, Y: 60},
+				{X: -20, Y: 40},
+				{X: -20, Y: -40},
+				{X: 0, Y: -60},
+				{X: 20, Y: -40},
+				{X: 20, Y: 40},
+			}
+
+			polygonShape := &entities.Polygon{
+				Color:         renderer.WHITE,
+				LocalVertices: localVertices,
+				WorldVertices: worldVertices,
+			}
+
+			polygon := entities.Body{
+				Position: vector.Vec2{X: float64(x), Y: float64(y)},
+				Mass:     2.0,
+				InvMass:  float64(1 / 2.0),
+				Shape:    polygonShape,
+				Rotation: 0.7,
+				Static:   false,
+				E:        0.1,
+				F:        0.7,
+				Name:     "Polygon",
+			}
+
+			game.Bodies = append(game.Bodies, polygon)
 		}
 	}
 }
@@ -146,6 +186,11 @@ func (game *Game) Update() {
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
 		body.Update(deltaTime)
+		if polygon, ok := body.Shape.(*entities.Polygon); ok {
+			if len(polygon.WorldVertices) > 4 {
+				fmt.Printf("X: %f, Y: %f\n", body.Position.X, body.Position.Y)
+			}
+		}
 	}
 }
 
@@ -154,6 +199,7 @@ func (game *Game) Draw() {
 
 	if game.DebugMode {
 		for _, col := range game.Collisions {
+			// TODO: change the name to collision debugger
 			collision.PolygonPolygonCollisionDebugger(col, game.Renderer)
 		}
 

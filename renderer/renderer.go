@@ -54,12 +54,14 @@ const (
 
 // Events type
 const (
-	QUIT           string = "QUIT"
-	KEYBOARD       string = "KEYBOARD"
-	KEYDOWN        string = "KEYDOWN"
-	KEYUP          string = "KEYUP"
-	MOUSE_UP_EVENT string = "MOUSE_UP_EVENT"
-	MOUSEMOTION    string = "MOUSEMOTION"
+	QUIT                  string = "QUIT"
+	KEYBOARD              string = "KEYBOARD"
+	KEYDOWN               string = "KEYDOWN"
+	KEYUP                 string = "KEYUP"
+	MOUSE_UP_EVENT        string = "MOUSE_UP_EVENT"
+	MOUSEMOTION           string = "MOUSEMOTION"
+	MOUSE_BUTTON_LEFT_UP  string = "MOUSE_BUTTON_LEFT_UP"
+	MOUSE_BUTTON_RIGHT_UP string = "MOUSE_BUTTON_RIGHT_UP"
 )
 
 // Keys
@@ -96,7 +98,12 @@ func (renderer *Renderer) PollEvent() *Event {
 		}
 	} else if mouseEvent, ok := sdlEvent.(*sdl.MouseButtonEvent); ok {
 		if mouseEvent.Type == sdl.MOUSEBUTTONUP {
-			event.Type = MOUSE_UP_EVENT
+			if mouseEvent.Button == sdl.BUTTON_LEFT {
+				event.Type = MOUSE_BUTTON_LEFT_UP
+			}
+			if mouseEvent.Button == sdl.BUTTON_RIGHT {
+				event.Type = MOUSE_BUTTON_RIGHT_UP
+			}
 		}
 	} else if _, ok := sdlEvent.(*sdl.MouseMotionEvent); ok {
 		event.Type = MOUSEMOTION
