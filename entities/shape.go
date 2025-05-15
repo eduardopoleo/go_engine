@@ -9,4 +9,6 @@ type Shape interface {
 	Draw(body *Body, renderer *renderer.Renderer)
 	MarkDebug()
 	UnMarkDebug()
+	GetHeight() float64
+	GetWidth() float64
 }

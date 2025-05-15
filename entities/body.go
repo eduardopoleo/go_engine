@@ -1,12 +1,14 @@
 package entities
 
 import (
+	"engine/renderer"
 	"engine/vector"
 )
 
 type Body struct {
-	Static bool
-	Name   string
+	Static  bool
+	Name    string
+	Texture *renderer.SDLTexture
 
 	// Linear properties
 	Mass         float64
@@ -26,6 +28,11 @@ type Body struct {
 	// Impulse
 	E float64 // coefficient of restitution
 	F float64 // coefficient of friction
+}
+
+func (body *Body) AttachTexture(path string, rend *renderer.Renderer) {
+	texture := renderer.LoadTexture(path, rend)
+	body.Texture = texture
 }
 
 func (body *Body) IntegrateLinear(dt float64) {

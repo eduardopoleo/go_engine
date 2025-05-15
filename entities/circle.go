@@ -20,6 +20,14 @@ func (circle *Circle) MomentOfInertia() float64 {
 	return 0.5 * float64(circle.Radius) * float64(circle.Radius)
 }
 
+func (circle *Circle) GetHeight() float64 {
+	return 2 * float64(circle.Radius)
+}
+
+func (circle *Circle) GetWidth() float64 {
+	return 2 * float64(circle.Radius)
+}
+
 func (circle *Circle) Draw(body *Body, renderer *renderer.Renderer) {
 	// fmt.Printf("drawing x %f, y %f\n", x, y)
 	renderer.DrawCircle(

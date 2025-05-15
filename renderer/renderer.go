@@ -6,12 +6,54 @@ import (
 	"math"
 
 	"github.com/veandco/go-sdl2/gfx"
+	"github.com/veandco/go-sdl2/img"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 type Renderer struct {
 	SDLRenderer *sdl.Renderer
 	SDLWindow   *sdl.Window
+}
+
+type SDLTexture struct {
+	Tex *sdl.Texture
+}
+
+func LoadTexture(path string, renderer *Renderer) *SDLTexture {
+	surface, err := img.Load(path)
+	if err != nil {
+		log.Fatalf("Failed to load image: %s\n", err)
+	}
+	defer surface.Free()
+
+	texture, err := renderer.SDLRenderer.CreateTextureFromSurface(surface)
+	if err != nil {
+		log.Fatalf("Failed to create texture: %s\n", err)
+	}
+
+	return &SDLTexture{Tex: texture}
+}
+
+func (texture *SDLTexture) Draw(x, y, rotation, width, height float64, renderer *Renderer) error {
+	dstRect := sdl.Rect{
+		X: int32(x - (width / 2)),
+		Y: int32(y - (height / 2)),
+		W: int32(width),
+		H: int32(height),
+	}
+
+	// Convert radians to degrees
+	rotationDeg := float64(rotation * 57.2958)
+
+	// SDL_RenderCopyEx(renderer, texture, NULL, &dstRect, rotationDeg, NULL, SDL_FLIP_NONE);
+	return renderer.SDLRenderer.CopyEx(
+		texture.Tex,
+		nil,           // srcRect (nil = full texture)
+		&dstRect,      // dstRect
+		rotationDeg,   // angle in degrees
+		nil,           // center (nil = rotate around center)
+		sdl.FLIP_NONE, // no flipping
+	)
 }
 
 func NewRenderer(name string, width int32, height int32) Renderer {

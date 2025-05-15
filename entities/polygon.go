@@ -30,6 +30,16 @@ func NewBox(color uint32, width float64, height float64) *Polygon {
 	}
 }
 
+func (polygon *Polygon) GetHeight() float64 {
+	vec := polygon.LocalVertices[1].Subtract(polygon.LocalVertices[0])
+	return vec.Magnitude()
+}
+
+func (polygon *Polygon) GetWidth() float64 {
+	vec := polygon.LocalVertices[3].Subtract(polygon.LocalVertices[0])
+	return vec.Magnitude()
+}
+
 /*
 TODO: How do we extend this interface for shapes with different amount of vertices.
 How do calculate the momentOfInertia for a shape do not know?

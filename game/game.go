@@ -45,6 +45,7 @@ func NewGame(name string, width int32, height int32) Game {
 	)
 	bigBox.Name = "bigBox"
 	bigBox.Rotation = 1.4
+	bigBox.AttachTexture("./assets/crate.png", &game.Renderer)
 
 	game.Bodies = append(game.Bodies, bottom)
 	game.Bodies = append(game.Bodies, left)
@@ -94,33 +95,11 @@ func (game *Game) Input() {
 				renderer.WHITE,
 				2,
 			)
+			circle.AttachTexture("./assets/bowlingball.png", &game.Renderer)
 			game.Bodies = append(game.Bodies, circle)
 		case renderer.MOUSE_BUTTON_RIGHT_UP:
 			x, y, _ := sdl.GetMouseState()
-
-			worldVertices := []vector.Vec2{
-				{X: 0, Y: 60},
-				{X: -20, Y: 40},
-				{X: -20, Y: -40},
-				{X: 0, Y: -60},
-				{X: 20, Y: -40},
-				{X: 20, Y: 40},
-			}
-			localVertices := []vector.Vec2{
-				{X: 0, Y: 60},
-				{X: -20, Y: 40},
-				{X: -20, Y: -40},
-				{X: 0, Y: -60},
-				{X: 20, Y: -40},
-				{X: 20, Y: 40},
-			}
-
-			polygonShape := &entities.Polygon{
-				Color:         renderer.WHITE,
-				LocalVertices: localVertices,
-				WorldVertices: worldVertices,
-			}
-
+			polygonShape := entities.NewBox(renderer.WHITE, 50, 50)
 			polygon := entities.Body{
 				Position: vector.Vec2{X: float64(x), Y: float64(y)},
 				Mass:     2.0,
@@ -132,6 +111,7 @@ func (game *Game) Input() {
 				F:        0.7,
 				Name:     "Polygon",
 			}
+			polygon.AttachTexture("./assets/crate.png", &game.Renderer)
 
 			game.Bodies = append(game.Bodies, polygon)
 		}
@@ -208,10 +188,21 @@ func (game *Game) Draw() {
 
 	for i := range game.Bodies {
 		body := &game.Bodies[i]
-		body.Shape.Draw(body, &game.Renderer)
+		if body.Texture == nil {
+			body.Shape.Draw(body, &game.Renderer)
 
-		if game.DebugMode {
-			body.Shape.UnMarkDebug()
+			if game.DebugMode {
+				body.Shape.UnMarkDebug()
+			}
+		} else {
+			body.Texture.Draw(
+				body.Position.X,
+				body.Position.Y,
+				body.Rotation,
+				body.Shape.GetWidth(),
+				body.Shape.GetHeight(),
+				&game.Renderer,
+			)
 		}
 	}
 
