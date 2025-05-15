@@ -173,13 +173,6 @@ func (game *Game) Update() {
 	}
 }
 
-func (game *Game) Cleanup() {
-	for _, body := range game.Bodies {
-		body.Destroy()
-	}
-	game.Renderer.Destroy()
-}
-
 func (game *Game) Draw() {
 	game.Renderer.ClearScreen()
 
@@ -213,4 +206,11 @@ func (game *Game) Draw() {
 	}
 
 	game.Renderer.Render()
+}
+
+func (game *Game) Cleanup() {
+	for _, body := range game.Bodies {
+		body.Destroy()
+	}
+	game.Renderer.Destroy()
 }
