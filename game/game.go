@@ -59,13 +59,12 @@ func (game *Game) Input() {
 	for event := game.Renderer.PollEvent(); event != nil; event = game.Renderer.PollEvent() {
 		switch event.Type {
 		case renderer.QUIT:
-			println("Quit")
 			game.Running = false
-			game.Renderer.Destroy()
+			game.Cleanup()
 		case renderer.KEYDOWN:
 			if event.Key() == renderer.ESCAPE {
 				game.Running = false
-				game.Renderer.Destroy()
+				game.Cleanup()
 			} else if event.Key() == renderer.LEFT_ARROW {
 				game.PushForce.X = float64(-50 * constants.PIXEL_PER_METER)
 			} else if event.Key() == renderer.RIGHT_ARROW {
@@ -172,6 +171,13 @@ func (game *Game) Update() {
 			}
 		}
 	}
+}
+
+func (game *Game) Cleanup() {
+	for _, body := range game.Bodies {
+		body.Destroy()
+	}
+	game.Renderer.Destroy()
 }
 
 func (game *Game) Draw() {

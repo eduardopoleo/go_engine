@@ -131,3 +131,10 @@ func (body *Body) Update(dt float64) {
 		}
 	}
 }
+
+func (body *Body) Destroy() {
+	if body.Texture != nil {
+		println("Cleaning up texture")
+		body.Texture.Destroy()
+	}
+}

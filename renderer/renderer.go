@@ -56,6 +56,13 @@ func (texture *SDLTexture) Draw(x, y, rotation, width, height float64, renderer 
 	)
 }
 
+func (texture *SDLTexture) Destroy() {
+	if texture.Tex != nil {
+		texture.Tex.Destroy()
+		texture.Tex = nil
+	}
+}
+
 func NewRenderer(name string, width int32, height int32) Renderer {
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
