@@ -8,8 +8,8 @@ import (
 )
 
 type Collision struct {
-	BodyA  entities.Body
-	BodyB  entities.Body
+	BodyA  *entities.Body
+	BodyB  *entities.Body
 	Normal vector.Vec2
 	Start  vector.Vec2
 	End    vector.Vec2
@@ -48,7 +48,7 @@ func Resolve(bodyA *entities.Body, bodyB *entities.Body) *Collision {
 		return nil
 	}
 
-	resolvePenetration(collision, bodyA, bodyB)
+	resolvePenetration(collision)
 	resolveImpulse(collision, bodyA, bodyB)
 	return collision
 }
@@ -118,8 +118,8 @@ func calculatePolygonCircleCollision(polygon *entities.Body, circle *entities.Bo
 	}
 
 	collision = Collision{
-		BodyA:  *polygon,
-		BodyB:  *circle,
+		BodyA:  polygon,
+		BodyB:  circle,
 		Normal: normal,
 		Start:  start,
 		End:    end,
@@ -144,8 +144,8 @@ func calculateCirCleCirCleCollission(bodyA *entities.Body, bodyB *entities.Body,
 	depth := dep.Magnitude()
 
 	return &Collision{
-		BodyA:  *bodyA,
-		BodyB:  *bodyB,
+		BodyA:  bodyA,
+		BodyB:  bodyB,
 		Normal: collisionNormal,
 		Start:  start,
 		End:    end,
@@ -188,8 +188,8 @@ func calculatePolygonPolygonCollision(bodyA *entities.Body, bodyB *entities.Body
 	}
 
 	return &Collision{
-		BodyA:  *bodyA,
-		BodyB:  *bodyB,
+		BodyA:  bodyA,
+		BodyB:  bodyB,
 		Depth:  depth,
 		Normal: normal,
 		Start:  start,
@@ -231,7 +231,10 @@ func calculatePenetration(polygonA *entities.Polygon, polygonB *entities.Polygon
 	return penetration, collidingEdge, collidingVertex
 }
 
-func resolvePenetration(collision *Collision, bodyA *entities.Body, bodyB *entities.Body) {
+func resolvePenetration(collision *Collision) {
+	bodyA := collision.BodyA
+	bodyB := collision.BodyB
+
 	invMassA := 1 / bodyA.Mass
 	invMassB := 1 / bodyB.Mass
 	invSum := invMassA + invMassB
