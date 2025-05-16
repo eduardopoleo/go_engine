@@ -49,7 +49,7 @@ func Resolve(bodyA *entities.Body, bodyB *entities.Body) *Collision {
 	}
 
 	resolvePenetration(collision)
-	resolveImpulse(collision, bodyA, bodyB)
+	resolveImpulse(collision)
 	return collision
 }
 
@@ -277,7 +277,10 @@ func resolvePenetration(collision *Collision) {
 // 	}
 // }
 
-func resolveImpulse(collision *Collision, bodyA *entities.Body, bodyB *entities.Body) {
+func resolveImpulse(collision *Collision) {
+	bodyA := collision.BodyA
+	bodyB := collision.BodyB
+
 	e := math.Min(bodyA.E, bodyB.E)
 
 	// r is the distance from the center of mass to the point of collision aprox.
