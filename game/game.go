@@ -72,7 +72,7 @@ func (game *Game) Input() {
 			game.World.AddBody(&circle)
 		case renderer.MOUSE_BUTTON_RIGHT_UP:
 			x, y, _ := sdl.GetMouseState()
-			polygonShape := entities.NewBox(renderer.WHITE, 100, 100)
+			polygonShape := entities.NewBox(renderer.WHITE, 50, 50)
 			polygon := entities.Body{
 				Position: vector.Vec2{X: float64(x), Y: float64(y)},
 				Mass:     2.0,

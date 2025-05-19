@@ -365,3 +365,55 @@ J  = \frac{-(1+e)(V_{rel_i} \cdot \hat{n})}{\frac{1}{m_a} + \frac{1}{m_b} + \fra
 $$
 
 This final form is useful becasue in our 2D engine r X n is going to be treated as
+
+# Constrains
+
+The problem with our current approach when solving collisions is that when we resolvePenetration we just automatically move the position of the body. This is is not correct because it could mean that the body might inadvertively collide with other bodies when doing so. this causes jittering.
+
+We need to solve the penetration in a more gradual way so that the whole system eventually converges into a point of equilibrium where the bodies are away from each other. we can do this using constrains. 
+
+Currently, our bodies are free to move anywhere, we only force their position when they collide there are no explicit constrains determining their movement.
+
+The constrain resolution will be based on forces. the intuitive idea is you apply forces / impulses to the bodies to "nudge" them into the right position to until the satisfy the constrain.
+
+Constrain function (C).
+inputs: bodyA, body (with all it's physical properties)
+output: scalar number?
+
+For a system where a ball should not go through a specific thredshold you need to:
+
+$$
+v_{y} = - \frac{c}{dt} * B
+$$
+
+Where
+- c is the error, or distance of the body from the target
+- B is the Baumgarte / bias factor. This determines how smooth we want the adjustment to be.
+
+This makes sense, the magnitude of the correction velocity would be proportional to the error distance. The definition does not change is distance over time which is velocity. B just tells us how fast we want to converge. Slower convertions are more computative expensive but more stable??
+
+Our system is more complex and is based on impulses not just velocity. This is only to get some intuition on it.
+
+A velocity based equality constrain can be generalized with:
+$$
+\dot{C} = \frac{∂C}{∂P} \frac{∂P}{∂t}\\[10pt]
+JV + b = 0
+$$
+
+where:
+- j is the jacobian matrix
+- v is the velocity vector (contains the Va and Vb) coordinates in multiple axis.
+- b is the bias use to smooth out the transition between the two states
+
+$$
+\begin{bmatrix} J_{v_{ax}} & J_{v_{ay}} & J_{w_{a}} & J_{v_{bx}} & J_{v_{by}} & J_{w_{b}} \end {bmatrix} *
+\begin{bmatrix}
+  v_{ax} \\
+  v_{ay} \\
+  w_{a}  \\
+  v_{bx} \\
+  v_{by} \\
+  w_{b}
+\end{bmatrix} +
+b = 0
+$$
