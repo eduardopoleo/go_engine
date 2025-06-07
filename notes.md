@@ -392,28 +392,319 @@ Where
 
 This makes sense, the magnitude of the correction velocity would be proportional to the error distance. The definition does not change is distance over time which is velocity. B just tells us how fast we want to converge. Slower convertions are more computative expensive but more stable??
 
-Our system is more complex and is based on impulses not just velocity. This is only to get some intuition on it.
+The above was just  to get some intuition on contrains and the idea of inderectly converging as oppose to directly manipulating the position values.
 
-A velocity based equality constrain can be generalized with:
-$$
-\dot{C} = \frac{∂C}{∂P} \frac{∂P}{∂t}\\[10pt]
-JV + b = 0
-$$
+Contrain Force
 
-where:
-- j is the jacobian matrix
-- v is the velocity vector (contains the Va and Vb) coordinates in multiple axis.
-- b is the bias use to smooth out the transition between the two states
+Its about finding internal forces that counteract the external forces applied to the object. The seminal example is the a bead in the wire, we need to find a constrain force that needs to be applied to the bead to keep it going arond the wire.
+
+Impulse vs Force constrains
+
+- We should not apply changes on the position directly
+- We can use velocity based constrains 
+- or we can use Acceleration based constrains which are based on forces
+- Impulses are velocity based constrains because you ultimately define impulses as J = M * dv, which is the weighted change of velocity.
+
+The forces would look like:
 
 $$
-\begin{bmatrix} J_{v_{ax}} & J_{v_{ay}} & J_{w_{a}} & J_{v_{bx}} & J_{v_{by}} & J_{w_{b}} \end {bmatrix} *
 \begin{bmatrix}
-  v_{ax} \\
-  v_{ay} \\
-  w_{a}  \\
-  v_{bx} \\
-  v_{by} \\
-  w_{b}
-\end{bmatrix} +
-b = 0
+  a_{x} \\
+  a_{y} \\
+  α
+\end{bmatrix} = M^{-1} * F
 $$
+
+Expanded into the matrix form
+
+$$
+\begin{bmatrix}
+  \frac{1}{m} & 0 & 0\\
+  0 & \frac{1}{m} & 0\\
+  0 & 0 & \frac{1}{I}
+\end{bmatrix}  
+*
+\begin{bmatrix}
+  F_x\\
+  F_y\\
+  τ
+\end{bmatrix}
+$$
+
+This is just a fancy way of expressing the calculation into the different coordinates in matrix, but it helps to see it this way because the further notations will require matrixes.
+
+Impulses
+
+$$
+dv = M^{-1} * Fdt
+$$
+or
+
+
+$$
+\begin{bmatrix}
+  \frac{1}{m} & 0 & 0\\
+  0 & \frac{1}{m} & 0\\
+  0 & 0 & \frac{1}{I}
+\end{bmatrix}  
+*
+\begin{bmatrix}
+  J_x\\
+  J_y\\
+  J_α
+\end{bmatrix}
+$$
+
+So ultimately they are very similar to each other.
+
+Now for collisions we'll have the following:
+
+$$
+\begin{bmatrix}
+  \frac{1}{m_a} & 0 & 0 & 0 & 0 & 0\\
+  0 & \frac{1}{m_a} & 0 & 0 & 0 & 0\\
+  0 & 0 & \frac{1}{I_a}& 0 & 0 & 0\\
+  0 & 0 & 0 & \frac{1}{m_b} & 0 & 0\\
+  0 & 0 & 0 & 0 & \frac{1}{m_b} & 0\\
+  0 & 0 & 0 & 0 & 0 & \frac{1}{I_b}
+\end{bmatrix}  
+*
+\begin{bmatrix}
+  J_{a_x}\\
+  J_{a_y}\\
+  J_{a_α}\\
+  J_{b_x}\\
+  J_{b_y}\\
+  J_{b_α}
+\end{bmatrix}
+$$
+
+Because the we need to consider the coordinates of both bodies.
+
+## Generalized Velocity Constrain equation
+
+We need to understand the chain rule. The chain helps us caculate the derivative of nested functions and with multiple variables. Given 
+
+$$
+y = f(g_{(x)}) \\[10pt]
+\frac{d_y}{d_x} = f^{'}(g_{(x)}) \cdot g^{'}(x)
+$$
+
+As example
+
+$$
+y = sin(x^2)\\[10pt]
+\frac{dy}{dx} = cos(x^2) \cdot 2x
+$$
+
+So it works as if we're recursively unpacking the derivatives. Now if we have a function that depends on multiple variables the general chain rule applies this way:
+
+$$
+z = f(x,y)\\[10pt]
+\frac{dz}{dt} = \frac{dz}{dx} \cdot \frac{dx}{dt} + \frac{dz}{dy} \cdot \frac{dy}{dt}
+$$
+
+Applying this to our function `C(P)` we then have:
+
+$$
+\frac{dC}{dt} = \frac{dC}{dP} \cdot \frac{dP}{dt}\\[10pt]
+\dot{C} = \frac{dC}{dP} \cdot \frac{dP}{dt}\\[10pt]
+\dot{C} = J \cdot \dot{P}\\[10pt]
+\dot{C} = J \cdot V
+$$
+
+If we only have 1 contrain and V depends on x, and y because we're working on 2D this can also be written following the chain rule for multipel vars as
+
+$$
+\dot{C} = \frac{dC}{dx} \cdot \dot{x} + \frac{dC}{dy} \cdot \dot{y}
+$$
+
+Expressing this using matrices we have
+$$
+\dot{C} = \begin{bmatrix}
+\frac{dC}{dx} & \frac{dC}{dy}
+\end{bmatrix}
+
+\begin{bmatrix}
+\dot{x}\\ 
+\dot{y} 
+\end{bmatrix}
+$$
+
+
+J stand for the jacobian which is the matrix representing the derivative of the original function with respect to all the variables it depends on
+
+So finally we arrive again to the above expression.
+
+$$
+\dot{C} = J * V
+$$
+This might seem redundant but it is important. The process to solve these constrain will be the following:
+- Represent our physical problem in terms of a position constraint. For example for a joint constraint between two objects we know that $P_a = P_b$ or $C = P_a - P_b = 0$ where $P_a$ and $P_b$ are the respective anchor point for both bodies.
+- Then we derivate the position contraint to find the velocity constraint $\dot{C} = \dot{P_a} - \dot{P_a} = 0$
+- Then we work that expression until we can isolate the velocity vector on the right side.
+- That way we find the jacobian by association.
+
+
+so this function needs to equate to zero to satisfy the constraint. We also add the Baumgarte coeficcient so that we can smooth out the resolution. That gives us the following 
+
+$$
+1) \quad \quad J * V + b = 0
+$$
+
+Where:
+- J is the jacobian
+- V is the final velocity
+- b is the bias term
+
+We can obtain the J from the contrains function and we can arbitrarily set b but we still need to find a solution for V so we need another equation. These other equation comes from the actual physical defintion of impulse which is the mass times the change in velocity.
+
+$$
+M(V_2 - V_1) = J \\[10pt] 
+M(V_2 - V_1) =  L λ \\[10pt]
+2) \quad \quad M(V_2 - V_1) =  J^{T} λ
+$$
+
+L λ is way to represent impulse as function of a direction vector (L) and a magnitude (λ). It so happens that the Jacobian is the representation of the gradient. The gradient is always perpendicular to the surface of the constrain and it represents the directions we have to apply the impulses to in order to nudge the bodies towards meeting the constrains. 
+
+The jacobian can be calculated based on the constrains function which will vary depending on the problem we're solving. So we solve for V2 in the function
+
+$$
+V2 = V_1 + M^{-1}J^{T} λ
+$$
+
+then replace this into 1)
+
+$$
+J * (V_1 + M^{-1}J^{T} λ) + b = 0\\[10pt]
+λ = -\frac{JV_1 + b}{JM^{-1}J^{T}}
+$$
+
+We know all these values then we can get the magnitude of the impulse and then plug back into equation 2 to get the new Bodies velocities.
+
+
+## Joint constraint
+
+Both A and B must have the same anchor point which means that ra = rb where ra and rb are supposed to be the corresponding anchor points. So `C = rb - ra = 0` but this is a vector operation which we can simplify by using the dot prouct
+
+$$
+C = (rb - ra) \cdot (rb - ra) = 0\\[10pt]
+C = [(b_x - a_x) - (b_y - a_y) ] \cdot [(b_x - a_x) - (b_y - a_y) ] = 0\\[10pt]
+C = [(b_x - a_x)^{2} + (b_y - a_y)^{2}] = 0\\[10pt]
+$$
+
+Because these are real numbers this means that
+
+$$
+b_x = a_x\\[10pt]
+b_y = a_y\\[10pt]
+b = a
+$$
+
+So basically what this does is that it reduces the problem from a vector to a scalar.
+
+Another intuitive way to think about this is that the dot product is
+
+$$
+ v \cdot v = |v^2| * cos(0)\\[10pt]
+ v \cdot v = |v^2|
+$$
+
+the only way that this is zero is that iv v is zero. In this case v is b - a. So the only way this could be zero is if b = a.
+
+
+# Derivation
+
+![distance constrain](./distance_constraint.png)
+
+$$
+C = (r_b - r_a) \cdot (r_b - r_a) = 0\\[10pt]
+$$
+
+Applying distributive property of the dot product
+
+$$
+(1)\quad \quad C = r_b \cdot r_b - r_b \cdot r_a - r_a \cdot r_b + r_a \cdot r_a = 0 
+$$
+
+This is the **position** constraint function but we're never going to work with the position constraint directly we need the velocity constraint which is the derivative of the above expression. Now the dot product derivative is tricky but the formula is: 
+
+$$
+(2) \quad \quad\frac{d(r \cdot s)}{dt} = r \cdot \frac{ds}{dt} + s \cdot \frac{dr}{dt}\\[10pt]
+$$
+
+Applying the above formula (2) into (1) gives gives us 4 distinct groups of expressions (one per each dot product). We can manipulate the expression until we arrive to:
+$$
+(3)\quad \quad \dot{C} = 2 * (r_b - r_a) \cdot \frac{dr_b}{dt} + 2 * (r_a - r_b) \frac{dr_a}{dt}
+$$
+
+Now we need to figure out what are those $\frac{dr}{dt}$ expressions. From physics we have that that the derivative of the position is the velocity. The formula of the velocity accounting for the rotating is:
+
+$$
+(4) \quad \quad \frac{dr}{dt} = v + (w \times r_{ang})
+$$
+
+This the equation of the velocity at a certain anchor point. $r_{ang}$ is the distance from the anchor point to the center of mass and $r$ is the absolute position of the anchor point. So replacing (4) into (3) we have:
+
+$$
+\dot{C} = 2(r_a - r_b) \cdot (v_a + w_a \times r_a) + 2(r_b - r_a) \cdot (v_b + w_b \times r_b)
+$$
+which can be further resolved into
+
+$$
+(5) \quad \quad \dot{C} = 2(r_a - r_b) \cdot v_a + 2(r_a - r_b) \cdot w_a \times r_a + 2(r_b - r_a) \cdot v_b + 2(r_b - r_a) \cdot w_b \times r_b
+$$
+
+Now we saw earlier that the general equation for the velocity constraint is
+
+$$
+(6) \quad \quad \dot{C} = JV
+$$
+
+Then it could be possible to re arrange equation (5) so that it conforms with (6) that way we can find the jacobian by association, we'll need to use some vector properties:
+
+$$
+\vec{a} \cdot (\vec{b} \times \vec{c}) = \vec{b} \cdot (\vec{c} \times \vec{a}) = \vec{c} \cdot (\vec{a} \times \vec{b})
+$$
+
+with that and an bit of algebraic manipulations we get to the following expression in terms of vector and matrices operations.
+
+$$
+\dot{C} = \begin{bmatrix}
+  2*(r_a - r_b), & 2*(r_a \times (r_{a_{local}} - r_b)), & 2*(rb-ra), & 2*(r_{r_{b_{local}}} \times (r_b - r_a))
+\end{bmatrix}
+*
+\begin{bmatrix}
+  v_a\\
+  w_a\\
+  v_b\\
+  w_b
+\end{bmatrix}
+$$
+
+Because we were able to isolate the velocity vector then we now have an expression for the Jacobian
+
+$$
+J = \begin{bmatrix}
+  2*(r_a - r_b), & 2*(r_a \times (r_{a_{local}} - r_b)), & 2*(rb-ra), & 2*(r_{r_{b_{local}}} \times (r_b - r_a))
+\end{bmatrix}
+$$
+
+Notice that the jacobian is now a function of the bodies positions which we know
+
+
+going back to the lamda equation
+
+$$
+λ = -\frac{JV_1 + b}{JM^{-1}J^{T}}
+$$
+
+This means that we've found J since we were able to isolate the velocities as a vector. We now need to perfom this operation to obtain the maginitude of the impulse.
+
+
+
+Future TODO:
+- Multi variable calculus to be able to understand the jacobian, langrangian multiplier etc.
+https://www.khanacademy.org/math/multivariable-calculus/thinking-about-multivariable-function 
+- Local Space vs WorldSpace
+- Cross product in 2D calculation.
