@@ -671,7 +671,7 @@ with that and an bit of algebraic manipulations we get to the following expressi
 
 $$
 \dot{C} = \begin{bmatrix}
-  2*(r_a - r_b), & 2*(r_a \times (r_{a_{local}} - r_b)), & 2*(rb-ra), & 2*(r_{r_{b_{local}}} \times (r_b - r_a))
+  2*(r_a - r_b), & 2*(ra_{local} \times (r_a - r_b)), & 2*(rb-ra), & 2*(rb_{local} \times (r_b - r_a))
 \end{bmatrix}
 *
 \begin{bmatrix}
@@ -700,6 +700,22 @@ $$
 $$
 
 This means that we've found J since we were able to isolate the velocities as a vector. We now need to perfom this operation to obtain the maginitude of the impulse.
+
+In order to solve it we'll use the the form
+$$
+J * M^{-1} * J^{T} * λ = J * V_1 
+$$
+
+Which equates to the form
+
+$$
+A x = b
+$$
+
+where
+`A = J * M^{-1} * J^{T}`, `x = λ` and `b = J * V_1`  
+
+
 
 
 
